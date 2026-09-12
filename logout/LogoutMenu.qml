@@ -10,6 +10,7 @@ Variants {
     id: root
 
     property color backgroundColor: ShellGlobals.materialColors.background
+    property real backgroundOpacity: 0.5
     property color buttonColor: ShellGlobals.materialColors.tertiarycontainer
     property color buttonHoverColor: ShellGlobals.materialColors.tertiary
     default property list<LogoutButton> buttons
@@ -58,7 +59,9 @@ Variants {
         }
 
         Rectangle {
-            color: root.backgroundColor
+            // Alpha on the colour, not `opacity`: opacity is inherited by
+            // children and would wash out the tiles along with the backdrop.
+            color: Qt.rgba(root.backgroundColor.r, root.backgroundColor.g, root.backgroundColor.b, root.backgroundOpacity)
             anchors.fill: parent
 
             MouseArea {
@@ -66,14 +69,23 @@ Variants {
                 onClicked: LogoutState.menuOpen = false
 
                 GridLayout {
+                    id: grid
                     anchors.centerIn: parent
 
-                    width: parent.width * 0.75
-                    height: parent.height * 0.75
+                    readonly property int gap: 8
 
-                    columns: 3
-                    columnSpacing: 8
-                    rowSpacing: 8
+                    // At most five per row, then rows are balanced rather than
+                    // left ragged: six buttons give 3x2, not 5 and a lone one.
+                    readonly property int tileRows: Math.max(1, Math.ceil(root.buttons.length / 5))
+                    readonly property int cols: Math.max(1, Math.ceil(root.buttons.length / grid.tileRows))
+
+                    // Largest square that keeps the whole grid inside 80% of the
+                    // screen in both directions.
+                    readonly property real tile: Math.min((w.width * 0.8 - grid.gap * (grid.cols - 1)) / grid.cols, (w.height * 0.8 - grid.gap * (grid.tileRows - 1)) / grid.tileRows)
+
+                    columns: grid.cols
+                    columnSpacing: grid.gap
+                    rowSpacing: grid.gap
 
                     Repeater {
                         model: root.buttons
@@ -81,8 +93,8 @@ Variants {
                         delegate: Rectangle {
                             required property LogoutButton modelData
 
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
+                            Layout.preferredWidth: grid.tile
+                            Layout.preferredHeight: grid.tile
 
                             color: ma.containsMouse ? root.buttonHoverColor : root.buttonColor
                             radius: ShellGlobals.radius
@@ -97,40 +109,39 @@ Variants {
                                 }
                             }
 
-                            Item {
-                                id: icon
+                            ColumnLayout {
                                 anchors.centerIn: parent
-                                width: parent.width * 0.25
-                                height: width
+                                spacing: 18
 
-                                Image {
-                                    id: image
-                                    anchors.fill: parent
-                                    source: `icons/${modelData.icon}.png`
-                                    smooth: true
-                                    mipmap: true
-                                    visible: false
+                                Item {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    implicitWidth: grid.tile * 0.3
+                                    implicitHeight: implicitWidth
+
+                                    Image {
+                                        id: image
+                                        anchors.fill: parent
+                                        source: `icons/${modelData.icon}.png`
+                                        smooth: true
+                                        mipmap: true
+                                        visible: false
+                                    }
+
+                                    ColorOverlay {
+                                        anchors.fill: parent
+                                        source: image
+                                        color: ShellGlobals.materialColors.ontertiary
+                                    }
                                 }
 
-                                ColorOverlay {
-                                    anchors.fill: parent
-                                    source: image
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: modelData.text
+                                    font.pointSize: 12
                                     color: ShellGlobals.materialColors.ontertiary
+                                    font.bold: true
+                                    font.family: ShellGlobals.fontFamily
                                 }
-                            }
-
-                            Text {
-                                anchors {
-                                    top: icon.bottom
-                                    topMargin: 20
-                                    horizontalCenter: parent.horizontalCenter
-                                }
-
-                                text: modelData.text
-                                font.pointSize: 12
-                                color: ShellGlobals.materialColors.ontertiary
-                                font.bold: true
-                                font.family: ShellGlobals.fontFamily
                             }
                         }
                     }

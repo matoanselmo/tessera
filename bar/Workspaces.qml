@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs
+import qs.services
 import qs.components
 
 // Workspaces belonging to this bar's own output. niri always keeps an empty

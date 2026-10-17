@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
-import Quickshell.Services.Mpris
 import qs
+import qs.services
 
 // SystemClock only wakes on the boundary we actually render, instead of the
 // old 1Hz timer that reformatted the string 60 times per visible change.
@@ -11,7 +11,7 @@ BarWidget {
     signal toggleRequested
 
     icon: "clock"
-    badge: Mpris.players.values.some(p => p.isPlaying) ? "music.svg" : ""
+    badge: Media.playing ? "music.svg" : ""
     label: Qt.formatDateTime(clock.date, "HH:mm")
     color: root.hovered ? ShellGlobals.materialColors.surfacebright : ShellGlobals.materialColors.tertiary
     foreground: ShellGlobals.materialColors.ontertiary

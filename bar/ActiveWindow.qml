@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs
+import qs.services
 
 // Title of the focused window, claimed only by the bar on the output that
 // actually holds it, so a second monitor does not echo the same title.

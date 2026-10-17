@@ -1,11 +1,12 @@
 import QtQuick
 import qs
+import qs.services
 
 BarWidget {
-    icon: ShellGlobals.isDnd ? "notifications_off" : "notifications_active"
+    icon: Notifications.dnd ? "notifications_off" : "notifications_active"
     color: ShellGlobals.materialColors.primarycontainer
     foreground: ShellGlobals.materialColors.onprimarycontainer
 
     interactive: true
-    onClicked: ShellGlobals.isDnd = !ShellGlobals.isDnd
+    onClicked: Notifications.setDnd(!Notifications.dnd)
 }

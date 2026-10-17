@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Services.Mpris
 import qs
+import qs.services
 import qs.components
 
 // Drops down from the centred clock: local and Brasília time, a month
@@ -17,8 +17,7 @@ BarPopup {
     // constant offset is exact and avoids relying on Intl in the JS engine.
     readonly property int brasiliaOffsetMinutes: -180
 
-    // Prefer a player that is actually playing, otherwise the first one around.
-    readonly property MprisPlayer player: Mpris.players.values.find(p => p.isPlaying) ?? Mpris.players.values[0] ?? null
+    readonly property var player: Media.player
 
     property int viewYear: clock.date.getFullYear()
     property int viewMonth: clock.date.getMonth()
@@ -38,12 +37,12 @@ BarPopup {
 
     onOpened: menu.resetMonth()
 
-    // MPRIS does not push position updates, so poll while it can be seen.
-    Timer {
-        running: menu.visible && (menu.player?.isPlaying ?? false)
-        interval: 1000
-        repeat: true
-        onTriggered: menu.player.positionChanged()
+    // The progress bar needs fresh positions only while it can be seen.
+    Binding {
+        target: Media
+        property: "trackPosition"
+        value: true
+        when: menu.visible
     }
 
     function resetMonth(): void {
@@ -297,12 +296,12 @@ BarPopup {
 
         ColumnLayout {
             Layout.fillWidth: true
-            visible: menu.player !== null && menu.player.positionSupported && menu.player.lengthSupported && menu.player.length > 0
+            visible: Media.hasTimeline
             spacing: 4
 
             Track {
                 Layout.fillWidth: true
-                value: menu.player && menu.player.length > 0 ? menu.player.position / menu.player.length : 0
+                value: Media.progress
             }
 
             RowLayout {

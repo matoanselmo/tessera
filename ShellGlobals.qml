@@ -4,8 +4,6 @@ import Quickshell
 import QtQuick
 
 Singleton {
-    property bool isDnd: false
-
     // Font Config
     // "Google Sans" was configured but is not installed on this system, so every
     // label silently fell back to the default sans. Adwaita Sans is the Fedora

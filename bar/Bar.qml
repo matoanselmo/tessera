@@ -3,6 +3,7 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import qs
+import qs.services
 import "notification"
 
 // One bar per connected screen.
@@ -49,6 +50,7 @@ Variants {
             anchorItem: clock
         }
 
+
         DismissLayer {
             screen: bar.screen
             active: volumeMenu.visible || clockMenu.visible || menu.visible
@@ -56,7 +58,7 @@ Variants {
             onDismissed: {
                 volumeMenu.close();
                 clockMenu.close();
-                NotifServer.menuOpen = false;
+                Notifications.menuOpen = false;
             }
         }
 
@@ -111,7 +113,7 @@ Variants {
                 // the menu through the DismissLayer lands here while it is still
                 // fading, and should not bounce it back open.
                 Dnd {
-                    onRightClicked: NotifServer.menuOpen = !menu.visible
+                    onRightClicked: Notifications.menuOpen = !menu.visible
                 }
                 PowerButton {}
             }

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs
+import qs.services
 
 PopupWindow {
     id: root
@@ -45,12 +46,9 @@ PopupWindow {
 
     // Declarative, rather than hand-wiring signals in Component.onCompleted.
     Connections {
-        target: NotifServer.notifServer
+        target: Notifications
 
-        function onNotification(n) {
-            if (ShellGlobals.isDnd)
-                return;
-
+        function onPopup(n) {
             popup.notif = n;
             popup.opacity = 1;
             root.visible = true;

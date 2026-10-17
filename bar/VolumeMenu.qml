@@ -4,18 +4,13 @@ import Quickshell
 import Quickshell.Services.Pipewire
 import qs
 import qs.components
+import qs.services
 
 BarPopup {
     id: menu
 
     required property PanelWindow bar
     required property Item anchorItem
-
-    readonly property PwNode sink: Pipewire.defaultAudioSink
-    readonly property real volume: menu.sink?.audio?.volume ?? 0
-    readonly property bool muted: menu.sink?.audio?.muted ?? false
-
-    readonly property var sinks: [...Pipewire.nodes.values].filter(n => n.isSink && !n.isStream)
 
     anchor.item: menu.anchorItem
     anchor.edges: Edges.Bottom | Edges.Right
@@ -24,19 +19,6 @@ BarPopup {
 
     implicitWidth: 300
     implicitHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
-
-    // Descriptions and volumes only stay current while the nodes are bound.
-    PwObjectTracker {
-        objects: menu.sinks
-    }
-
-    function setVolume(fraction: real): void {
-        if (!menu.sink?.audio)
-            return;
-
-        menu.sink.audio.muted = false;
-        menu.sink.audio.volume = Math.max(0, Math.min(1, fraction));
-    }
 
     ColumnLayout {
         id: column
@@ -50,7 +32,7 @@ BarPopup {
 
         StyledText {
             Layout.fillWidth: true
-            text: menu.sink?.description ?? "No output device"
+            text: Audio.sink?.description ?? "No output device"
             elide: Text.ElideRight
             font.bold: true
             font.pixelSize: 14
@@ -61,17 +43,14 @@ BarPopup {
             spacing: 10
 
             BarWidget {
-                icon: menu.muted ? "volume-muted.svg" : "volume-high.svg"
-                color: menu.muted ? ShellGlobals.materialColors.errorcontainer : ShellGlobals.materialColors.tertiary
-                foreground: menu.muted ? ShellGlobals.materialColors.onerrorcontainer : ShellGlobals.materialColors.ontertiary
+                icon: Audio.muted ? "volume-muted.svg" : "volume-high.svg"
+                color: Audio.muted ? ShellGlobals.materialColors.errorcontainer : ShellGlobals.materialColors.tertiary
+                foreground: Audio.muted ? ShellGlobals.materialColors.onerrorcontainer : ShellGlobals.materialColors.ontertiary
                 implicitHeight: 30
                 Layout.preferredHeight: 30
 
                 interactive: true
-                onClicked: {
-                    if (menu.sink?.audio)
-                        menu.sink.audio.muted = !menu.muted;
-                }
+                onClicked: Audio.toggleMute()
             }
 
             Track {
@@ -79,8 +58,8 @@ BarPopup {
                 Layout.fillWidth: true
                 interactive: true
                 thickness: 6
-                value: menu.muted ? 0 : menu.volume
-                onMoved: value => menu.setVolume(value)
+                value: Audio.muted ? 0 : Audio.volume
+                onMoved: value => Audio.setVolume(value)
             }
 
             StyledText {
@@ -93,17 +72,17 @@ BarPopup {
         }
 
         Divider {
-            visible: menu.sinks.length > 1
+            visible: Audio.sinks.length > 1
         }
 
         Repeater {
-            model: menu.sinks.length > 1 ? menu.sinks : []
+            model: Audio.sinks.length > 1 ? Audio.sinks : []
 
             delegate: Rectangle {
                 id: device
                 required property PwNode modelData
 
-                readonly property bool isCurrent: device.modelData === menu.sink
+                readonly property bool isCurrent: device.modelData === Audio.sink
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 28
@@ -125,7 +104,7 @@ BarPopup {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: Pipewire.preferredDefaultAudioSink = device.modelData
+                    onClicked: Audio.setDefaultSink(device.modelData)
                 }
             }
         }

@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Notifications
 import qs
+import qs.services
 import qs.components
 
 BarPopup {
@@ -22,10 +23,10 @@ BarPopup {
     // Open state lives in the singleton so the "notifications" IPC target is
     // registered once, not once per screen. Every path that hides the popup
     // writes back to it, which keeps the IPC toggle in step.
-    readonly property bool shouldShow: NotifServer.menuOpen
+    readonly property bool shouldShow: Notifications.menuOpen
 
     onShouldShowChanged: panel.shouldShow ? panel.open() : panel.close()
-    onHidden: NotifServer.menuOpen = false
+    onHidden: Notifications.menuOpen = false
 
     ColumnLayout {
         anchors.fill: parent
@@ -54,7 +55,7 @@ BarPopup {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: NotifServer.clearNotifs()
+                    onClicked: Notifications.clearNotifs()
                 }
             }
         }
@@ -87,7 +88,7 @@ BarPopup {
             bottomMargin: 10
             spacing: 6
 
-            model: NotifServer.notifications
+            model: Notifications.notifications
 
             delegate: NotificationEntry {
                 id: toast

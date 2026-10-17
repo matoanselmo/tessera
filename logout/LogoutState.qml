@@ -29,20 +29,23 @@ Singleton {
             icon: "suspend"
         },
         LogoutButton {
-            // The menu is its own confirmation, so skip niri's prompt.
+            // The menu asks for its own confirmation, so skip niri's prompt.
             command: "niri msg action quit --skip-confirmation"
             text: "Log out"
             icon: "logout"
+            confirm: "Click again to log out"
         },
         LogoutButton {
             command: "systemctl reboot"
             text: "Reboot"
             icon: "reboot"
+            confirm: "Click again to reboot"
         },
         LogoutButton {
             command: "systemctl poweroff"
             text: "Shutdown"
             icon: "shutdown"
+            confirm: "Click again to shut down"
         }
     ]
 

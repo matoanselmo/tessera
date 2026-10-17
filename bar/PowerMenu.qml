@@ -44,11 +44,27 @@ BarPopup {
                 id: row
                 required property LogoutButton modelData
 
+                // Waiting for the confirming second click; see LogoutButton.confirm.
+                property bool armed: false
+                readonly property color foreground: {
+                    if (row.armed)
+                        return ShellGlobals.materialColors.onerrorcontainer;
+                    if (hover.containsMouse)
+                        return ShellGlobals.materialColors.ontertiary;
+                    return ShellGlobals.materialColors.ontertiarycontainer;
+                }
+
                 Layout.fillWidth: true
                 // Square, matching the button above.
                 Layout.preferredHeight: menu.anchorItem.width
                 radius: ShellGlobals.radius
-                color: hover.containsMouse ? ShellGlobals.materialColors.tertiary : "transparent"
+                color: {
+                    if (row.armed)
+                        return ShellGlobals.materialColors.errorcontainer;
+                    if (hover.containsMouse)
+                        return ShellGlobals.materialColors.tertiary;
+                    return "transparent";
+                }
 
                 Behavior on color {
                     ColorAnimation {
@@ -59,12 +75,27 @@ BarPopup {
                 TintedIcon {
                     anchors.centerIn: parent
                     source: row.modelData.iconUrl
-                    color: hover.containsMouse ? ShellGlobals.materialColors.ontertiary : ShellGlobals.materialColors.ontertiarycontainer
+                    color: row.foreground
+                }
+
+                Timer {
+                    running: row.armed
+                    interval: 3000
+                    onTriggered: row.armed = false
+                }
+
+                Connections {
+                    target: menu
+
+
+                    function onHidden() {
+                        row.armed = false;
+                    }
                 }
 
                 Tooltip {
                     target: row
-                    text: row.modelData.text
+                    text: row.armed ? row.modelData.confirm : row.modelData.text
                     hovered: hover.containsMouse
                     edge: Edges.Left
                 }
@@ -74,6 +105,11 @@ BarPopup {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
+                        if (row.modelData.confirm !== "" && !row.armed) {
+                            row.armed = true;
+                            return;
+                        }
+
                         menu.close();
                         row.modelData.exec();
                     }

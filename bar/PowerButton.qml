@@ -1,5 +1,6 @@
 import QtQuick
 import qs
+import qs.components
 
 // Toggles the power menu that drops below it. Kept quiet until pointed at, so
 // the one destructive control in the bar announces itself on hover (or while
@@ -20,8 +21,6 @@ BarWidget {
     tooltip: root.active ? "" : "Power"
 
     Behavior on color {
-        ColorAnimation {
-            duration: ShellGlobals.animFast
-        }
+        CAnim {}
     }
 }

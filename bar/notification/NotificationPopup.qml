@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs
+import qs.components
 import qs.services
 
 // Stack of toasts hanging below the bar's right edge, newest at the bottom.
@@ -39,10 +40,10 @@ PopupWindow {
                 width: stack.width
                 notif: toast.modelData
 
-                NumberAnimation on opacity {
+                Anim on opacity {
                     from: 0
                     to: 1
-                    duration: ShellGlobals.animSlow
+                    time: ShellGlobals.animSlow
                 }
 
                 HoverHandler {

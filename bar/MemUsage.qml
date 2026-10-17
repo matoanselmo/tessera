@@ -1,5 +1,6 @@
 import QtQuick
 import qs
+import qs.components
 import qs.services
 
 BarWidget {
@@ -14,23 +15,21 @@ BarWidget {
     readonly property bool memCritical: SystemStats.memPercent >= 90
 
     Behavior on color {
-        ColorAnimation {
-            duration: 180
-        }
+        CAnim {}
     }
 
     SequentialAnimation on opacity {
         running: root.memCritical
         loops: Animation.Infinite
-        NumberAnimation {
+        Anim {
             to: 0.72
-            duration: 420
-            easing.type: Easing.InOutQuad
+            time: 420
+            curve: ShellGlobals.easeInOut
         }
-        NumberAnimation {
+        Anim {
             to: 1
-            duration: 420
-            easing.type: Easing.InOutQuad
+            time: 420
+            curve: ShellGlobals.easeInOut
         }
         onStopped: root.opacity = 1
     }

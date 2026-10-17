@@ -70,16 +70,11 @@ Rectangle {
                 }
 
                 Behavior on implicitWidth {
-                    NumberAnimation {
-                        duration: ShellGlobals.animFast
-                        easing.type: Easing.OutCubic
-                    }
+                    Anim {}
                 }
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: ShellGlobals.animFast
-                    }
+                    CAnim {}
                 }
 
                 StyledText {

@@ -31,10 +31,7 @@ Item {
         width: parent.width
         height: 16 * 2 + header.implicitHeight + searchContainer.Layout.topMargin + searchContainer.implicitHeight + list.topMargin + list.bottomMargin + Math.min(Math.max(list.contentHeight, 40), root.maxListHeight)
         Behavior on height {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
-            }
+            Anim {}
         }
         color: ShellGlobals.materialColors.tertiarycontainer
         radius: ShellGlobals.radius

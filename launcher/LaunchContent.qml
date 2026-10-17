@@ -51,10 +51,7 @@ Item {
         id: content
         height: 24 + searchContainer.implicitHeight + list.topMargin + list.bottomMargin + Math.min(list.contentHeight, list.delegateHeight * 10)
         Behavior on height {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
-            }
+            Anim {}
         }
         width: parent.width
         color: ShellGlobals.materialColors.tertiarycontainer
@@ -169,50 +166,45 @@ Item {
                 bottomMargin: list.count == 0 ? 0 : 7
 
                 add: Transition {
-                    NumberAnimation {
+                    Anim {
                         property: "opacity"
                         from: 0
                         to: 1
-                        duration: 100
+                        time: ShellGlobals.animFast
                     }
                 }
 
                 displaced: Transition {
-                    NumberAnimation {
+                    Anim {
                         property: "y"
-                        duration: 200
-                        easing.type: Easing.OutCubic
                     }
-                    NumberAnimation {
+                    Anim {
                         property: "opacity"
                         to: 1
-                        duration: 100
+                        time: ShellGlobals.animFast
                     }
                 }
 
                 move: Transition {
-                    NumberAnimation {
+                    Anim {
                         property: "y"
-                        duration: 200
-                        easing.type: Easing.OutCubic
                     }
-                    NumberAnimation {
+                    Anim {
                         property: "opacity"
                         to: 1
-                        duration: 100
+                        time: ShellGlobals.animFast
                     }
                 }
 
                 remove: Transition {
-                    NumberAnimation {
+                    Anim {
                         property: "y"
-                        duration: 200
-                        easing.type: Easing.OutCubic
                     }
-                    NumberAnimation {
+                    Anim {
                         property: "opacity"
                         to: 0
-                        duration: 100
+                        time: ShellGlobals.animFast
+                        curve: ShellGlobals.easeIn
                     }
                 }
 

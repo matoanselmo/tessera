@@ -67,9 +67,7 @@ BarPopup {
                 }
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: ShellGlobals.animFast
-                    }
+                    CAnim {}
                 }
 
                 TintedIcon {

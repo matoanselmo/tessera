@@ -15,9 +15,7 @@ FocusScope {
     opacity: card.shown ? 1 : 0
 
     Behavior on opacity {
-        NumberAnimation {
-            duration: ShellGlobals.animFade
-        }
+        Anim {}
     }
 
     onOpacityChanged: {

@@ -97,10 +97,10 @@ BarPopup {
                 width: listView.width
                 notif: modelData
 
-                NumberAnimation on opacity {
+                Anim on opacity {
                     from: 0
                     to: 1
-                    duration: ShellGlobals.animSlow
+                    time: ShellGlobals.animSlow
                 }
             }
         }

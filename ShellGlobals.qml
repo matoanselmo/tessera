@@ -41,11 +41,22 @@ Singleton {
     readonly property int popupPadding: 12
     readonly property int popupSpacing: 10
 
-    // Animation durations, in ms. `fast` for hover and state colour changes,
-    // `fade` for popups opening and closing, `slow` for notifications.
-    readonly property int animFast: 140
-    readonly property int animFade: 160
-    readonly property int animSlow: 320
+    // Motion. Durations in ms: `fast` for hover and colour changes, `normal`
+    // for things opening, moving or resizing, `slow` for longer travel such
+    // as toasts sliding in. Every animation is scaled by `motionScale`, so the
+    // whole shell's pace is one number: 1.25 is calmer, 0 turns motion off.
+    readonly property real motionScale: 1
+    readonly property int animFast: 150
+    readonly property int animNormal: 250
+    readonly property int animSlow: 400
+
+    // Cubic bezier curves for Easing.BezierSpline (control points, then the
+    // end point). `easeOut` decelerates hard into place, for anything
+    // arriving or moving; `easeIn` accelerates away, for anything leaving;
+    // `easeInOut` is for colour and state changes in place.
+    readonly property var easeOut: [0.2, 0, 0, 1, 1, 1]
+    readonly property var easeIn: [0.3, 0, 1, 1, 1, 1]
+    readonly property var easeInOut: [0.4, 0, 0.2, 1, 1, 1]
 
     // One Dark material-style roles.
     //

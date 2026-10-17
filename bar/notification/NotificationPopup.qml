@@ -10,12 +10,14 @@ import qs.services
 PopupWindow {
     id: root
 
+    // Its `popups` list says when a menu is open and the toasts should hide.
     required property PanelWindow bar
-    required property PopupWindow menu
 
     color: "transparent"
-    // Held up briefly after the last toast goes, so its exit can play.
-    visible: (Notifications.toasts.length > 0 || linger.running) && !root.menu.visible
+    // Held up briefly after the last toast goes, so its exit can play, and
+    // kept out of the way while any of the bar's menus or panels is open
+    // (the notification history included); the toasts return once it closes.
+    visible: (Notifications.toasts.length > 0 || linger.running) && !root.bar.popups.some(p => p.visible)
 
     anchor.window: bar
     anchor.rect.x: bar.width - root.width - ShellGlobals.barGap
@@ -113,9 +115,10 @@ PopupWindow {
 
             // Restarts from the full timeout once the pointer leaves, so a
             // toast you were reading does not vanish the instant you look away.
+            // Paused while hidden under a menu, so none expire unseen.
             Timer {
                 interval: Notifications.toastTimeout(toast.modelData)
-                running: interval > 0 && !hover.hovered
+                running: interval > 0 && !hover.hovered && root.visible
                 onTriggered: Notifications.dropToast(toast.modelData)
             }
         }

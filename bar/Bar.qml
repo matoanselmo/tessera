@@ -41,7 +41,6 @@ Variants {
         NotificationPopup {
             id: notificationPopup
             bar: bar
-            menu: menu
         }
 
         VolumePanel {

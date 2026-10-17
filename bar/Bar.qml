@@ -129,18 +129,6 @@ Variants {
                     menu: trayMenu
                 }
 
-                // Same visibility check as the notification toggle, so a click
-                // that dismisses an open panel does not reopen it.
-                NetworkWidget {
-                    id: networkWidget
-                    onToggleRequested: Internet.panelOpen = !networkPanel.visible
-                }
-
-                BluetoothWidget {
-                    id: bluetoothWidget
-                    onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
-                }
-
                 VolumeControl {
                     id: volumeControl
                     onToggleRequested: volumeMenu.toggle()
@@ -155,6 +143,18 @@ Variants {
                 Dnd {
                     onRightClicked: Notifications.menuOpen = !menu.visible
                 }
+                // Same visibility check as the notification toggle, so a click
+                // that dismisses an open panel does not reopen it.
+                NetworkWidget {
+                    id: networkWidget
+                    onToggleRequested: Internet.panelOpen = !networkPanel.visible
+                }
+
+                BluetoothWidget {
+                    id: bluetoothWidget
+                    onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
+                }
+
                 // Same visibility check as the notification toggle, so a click
                 // that dismisses the open menu does not reopen it.
                 PowerButton {

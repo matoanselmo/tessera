@@ -54,6 +54,7 @@ BarPopup {
                 source: Qt.resolvedUrl("icons/clear_all.png")
 
                 MouseArea {
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     onClicked: Notifications.clearNotifs()
                 }

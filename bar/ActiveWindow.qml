@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs
+import qs.components
 import qs.services
 
 // Title of the focused window, claimed only by the bar on the output that
@@ -15,10 +16,29 @@ BarWidget {
     readonly property var window: Niri.focusedWindow
     readonly property string title: root.window && Niri.workspaceById(root.window.workspace_id)?.output === root.screen.name ? (root.window.title ?? "") : ""
 
-    visible: root.title !== ""
+    // The last title shown, kept while the widget fades out so it does not
+    // blank before it disappears.
+    property string shownTitle: ""
+
+    onTitleChanged: {
+        if (root.title !== "")
+            root.shownTitle = root.title;
+    }
+
+    // A different window fades its title in; the same window retitling itself
+    // (terminals do, constantly) just updates.
+    readonly property var windowId: root.window?.id ?? null
+    onWindowIdChanged: root.refreshLabel()
+
+    opacity: root.title !== "" ? 1 : 0
+    visible: root.opacity > 0
+
+    Behavior on opacity {
+        Anim {}
+    }
 
     icon: "window"
-    label: root.title
+    label: root.shownTitle
     // The label elides against the clock, so the full title lives here.
     tooltip: root.title
     color: ShellGlobals.materialColors.primary

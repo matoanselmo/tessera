@@ -27,6 +27,10 @@ Flow {
             radius: ShellGlobals.radius
             color: hover.containsMouse ? ShellGlobals.materialColors.tertiary : "transparent"
 
+            Behavior on color {
+                CAnim {}
+            }
+
             StyledText {
                 id: label
                 anchors.centerIn: parent
@@ -38,6 +42,7 @@ Flow {
 
             MouseArea {
                 id: hover
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 hoverEnabled: true
                 onClicked: hint.modelData.action?.()

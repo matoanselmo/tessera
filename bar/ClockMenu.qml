@@ -172,6 +172,7 @@ BarPopup {
 
                 // Clicking the title jumps back to the current month.
                 MouseArea {
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     onClicked: menu.resetMonth()
                 }

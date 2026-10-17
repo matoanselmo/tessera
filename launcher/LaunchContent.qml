@@ -225,6 +225,7 @@ Item {
                 readonly property real delegateHeight: 36
 
                 delegate: MouseArea {
+                    cursorShape: Qt.PointingHandCursor
                     required property var modelData
 
                     implicitHeight: list.delegateHeight

@@ -94,6 +94,7 @@ Rectangle {
                 }
 
                 MouseArea {
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     onClicked: Niri.focusWorkspace(pill.workspace)
                 }

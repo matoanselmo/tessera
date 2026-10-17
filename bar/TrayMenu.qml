@@ -142,6 +142,10 @@ BarPopup {
         Layout.fillWidth: true
         radius: ShellGlobals.radius
         color: hover.containsMouse && row.enabled ? ShellGlobals.materialColors.tertiary : "transparent"
+
+        Behavior on color {
+            CAnim {}
+        }
         opacity: row.enabled ? 1 : 0.45
 
         RowLayout {
@@ -184,6 +188,7 @@ BarPopup {
 
         MouseArea {
             id: hover
+            cursorShape: Qt.PointingHandCursor
             anchors.fill: parent
             hoverEnabled: true
             enabled: row.enabled

@@ -65,10 +65,17 @@ Rectangle {
                     implicitSize: ShellGlobals.iconSize
                     source: entry.iconSource
                     opacity: mouse.containsMouse ? 0.75 : 1
+
+                    Behavior on opacity {
+                        Anim {
+                            time: ShellGlobals.animFast
+                        }
+                    }
                 }
 
                 MouseArea {
                     id: mouse
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     hoverEnabled: true
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton

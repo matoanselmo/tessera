@@ -34,6 +34,10 @@ Item {
         border.width: 1
         border.color: pane.accent
         radius: ShellGlobals.radius
+
+        Behavior on border.color {
+            CAnim {}
+        }
     }
 
     // Masks the border behind the title.
@@ -50,6 +54,10 @@ Item {
             font.family: ShellGlobals.monoFamily
             font.bold: true
             color: pane.focused ? ShellGlobals.materialColors.secondary : ShellGlobals.materialColors.ontertiarycontainer
+
+            Behavior on color {
+                CAnim {}
+            }
         }
     }
 

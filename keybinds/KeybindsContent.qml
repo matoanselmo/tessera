@@ -157,6 +157,10 @@ Item {
                         visible: !row.modelData.header
                         anchors.fill: parent
                         color: hover.hovered ? ShellGlobals.materialColors.tertiary : "transparent"
+
+                        Behavior on color {
+                            CAnim {}
+                        }
                         radius: ShellGlobals.radius
 
                         HoverHandler {

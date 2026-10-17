@@ -100,6 +100,7 @@ BarPopup {
 
                 MouseArea {
                     id: hover
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {

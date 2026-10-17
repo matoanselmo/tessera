@@ -40,6 +40,27 @@ Rectangle {
     implicitWidth: root.maximumWidth > 0 ? Math.min(row.implicitWidth + 16, root.maximumWidth) : row.implicitWidth + 16
     implicitHeight: ShellGlobals.barThickness
 
+    // A label changing length glides the widget (and its neighbours) to the
+    // new width instead of shifting the bar in one frame.
+    Behavior on implicitWidth {
+        Anim {}
+    }
+
+    Behavior on color {
+        CAnim {}
+    }
+
+    // A small squeeze while pressed, springing back with a hint of overshoot.
+    scale: mouse.pressed && root.interactive ? 0.95 : 1
+
+    Behavior on scale {
+        Anim {
+            time: ShellGlobals.animFast
+            easing.type: Easing.OutBack
+            easing.overshoot: 1.2
+        }
+    }
+
     Layout.preferredHeight: ShellGlobals.barThickness
     Layout.alignment: Qt.AlignVCenter
 
@@ -71,6 +92,7 @@ Rectangle {
         }
 
         StyledText {
+            id: labelText
             visible: root.label !== ""
             text: root.label
             elide: Text.ElideRight
@@ -87,10 +109,26 @@ Rectangle {
         anchors.fill: parent
         enabled: root.interactive || root.tooltip !== ""
         hoverEnabled: true
+        cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
         // A tooltip-only widget watches hover but lets clicks through.
         acceptedButtons: root.interactive ? Qt.LeftButton | Qt.RightButton : Qt.NoButton
         onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
         onWheel: event => root.scrolled(event.angleDelta.y)
+    }
+
+    // Fades the label in, for when it now means something else entirely (a
+    // different window) rather than just ticking over.
+    function refreshLabel(): void {
+        labelFade.restart();
+    }
+
+    Anim {
+        id: labelFade
+        target: labelText
+        property: "opacity"
+        from: 0
+        to: 1
+        time: ShellGlobals.animNormal
     }
 
     Tooltip {

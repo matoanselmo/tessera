@@ -12,11 +12,11 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 | --- | --- |
 | `shell.qml` | Entry point. Instantiates the bar and wallpaper, and the launcher and keybinds singletons. |
 | `ShellGlobals.qml` | Config and theme: fonts, colours (`materialColors`), sizes, motion (durations, easing curves, and `motionScale`, one multiplier for the whole shell's pace), search engine, world clocks. |
-| `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`, `Internet` (nmcli + Wi-Fi), `BluetoothState`. |
+| `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`, `Internet` (nmcli + Wi-Fi), `BluetoothState`, `Clipboard` (runs the cliphist recorder). |
 | `components/` | Reusable UI pieces with no data of their own: `Anim`/`CAnim` (animations on the motion tokens), `Reveal` (shared entrance/exit), `FadeCard`, `BarPopup`, `BarPanel` (a dropdown that can take the keyboard), `OverlayController`, `Tooltip`, `TintedIcon`, `StyledText`, `Divider`, `Track`, and the terminal-styled `TuiPane`, `TuiTable`, `TuiFooter`. |
 | `bar/` | The bar (one per screen), its widgets including the system tray, and the menus that drop from it. |
 | `osd/` | On-screen displays: the volume OSD shown on the focused output. |
-| `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`) and fuzzy matching (`Fuzzy.js`). |
+| `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`), fuzzy matching (`Fuzzy.js`) and usage history (`History.qml`). Start a query with `;` for clipboard history: Enter copies an entry back, Shift+Delete forgets it. |
 | `keybinds/` | Searchable overlay of the binds in the niri config. |
 | `logout/` | The power actions (lock, suspend, log out, reboot, shutdown) and the power menu's open state, in `LogoutState`. `bar/PowerMenu.qml` draws them. |
 | `wallpaper/` | Background layer per screen. |
@@ -36,6 +36,7 @@ Bind these in niri with `spawn "qs" "ipc" "call" ...`:
 
 ```
 qs ipc call launcher      toggle | open | close
+qs ipc call clipboard     toggle | open          # the launcher, in clipboard mode
 qs ipc call keybinds      toggle | open | close
 qs ipc call logout        toggle | open | close
 qs ipc call volume        toggle | open | close

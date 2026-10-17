@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Widgets
 import qs
 import qs.components
+import qs.services
 import "Calculator.js" as Calculator
 import "WebSearch.js" as WebSearch
 import "Fuzzy.js" as Fuzzy
@@ -18,10 +19,36 @@ Item {
 
     readonly property string query: search.text.trim()
 
+    // A leading `;` switches to clipboard history; the rest filters it.
+    readonly property bool clipMode: search.text.startsWith(";")
+    readonly property string clipQuery: search.text.slice(1).trim().toLowerCase()
+
+    onClipModeChanged: {
+        if (root.clipMode)
+            Clipboard.refresh();
+    }
+
     // Non-application rows. Both return null when the query isn't theirs, so
     // they cost one regex test per keystroke on an ordinary app search.
-    readonly property var calcResult: Calculator.evaluate(root.query)
-    readonly property var webAction: WebSearch.actionFor(root.query, ShellGlobals.searchEngineUrl, ShellGlobals.searchEngineName)
+    readonly property var calcResult: root.clipMode ? null : Calculator.evaluate(root.query)
+    readonly property var webAction: root.clipMode ? null : WebSearch.actionFor(root.query, ShellGlobals.searchEngineUrl, ShellGlobals.searchEngineName)
+
+    // Opened through the clipboard IPC target: start in clipboard mode.
+    Component.onCompleted: {
+        if (Controller.pendingQuery !== "") {
+            search.text = Controller.pendingQuery;
+            Controller.pendingQuery = "";
+        }
+    }
+
+    Connections {
+        target: Controller
+
+        function onQueryRequested(text) {
+            search.text = text;
+            Controller.pendingQuery = "";
+        }
+    }
 
     function runEntry(entry: var): void {
         if (!entry)
@@ -38,6 +65,9 @@ Item {
             break;
         case "web":
             Quickshell.execDetached(["xdg-open", entry.url]);
+            break;
+        case "clip":
+            Clipboard.copy(entry.entry);
             break;
         }
 
@@ -91,6 +121,15 @@ Item {
                         Keys.onEscapePressed: root.closeRequested()
 
                         Keys.onPressed: event => {
+                            // Shift+Delete forgets the selected clipboard entry.
+                            if (root.clipMode && event.key == Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
+                                const row = list.currentItem?.modelData;
+                                if (row?.kind === "clip")
+                                    Clipboard.remove(row.entry);
+                                event.accepted = true;
+                                return;
+                            }
+
                             if (event.modifiers & Qt.ControlModifier) {
                                 if (event.key == Qt.Key_J) {
                                     list.currentIndex = list.currentIndex == list.count - 1 ? 0 : list.currentIndex + 1;
@@ -110,6 +149,16 @@ Item {
 
                         onTextChanged: {
                             list.currentIndex = 0;
+                        }
+
+                        StyledText {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            visible: search.text === ""
+                            text: "Search apps  ·  = maths  ·  ; clipboard"
+                            font: search.font
+                            color: ShellGlobals.materialColors.onsecondarycontainer
+                            opacity: 0.4
                         }
                     }
                 }
@@ -133,6 +182,18 @@ Item {
                     }))
 
                     values: {
+                        // Clipboard mode shows nothing else.
+                        if (root.clipMode) {
+                            const q = root.clipQuery;
+                            return Clipboard.entries.filter(e => q === "" || e.text.toLowerCase().includes(q)).slice(0, 200).map(e => ({
+                                kind: "clip",
+                                name: e.text,
+                                glyph: e.image ? "\u25a3" : "\u29c9",
+                                hint: "Copy",
+                                entry: e
+                            }));
+                        }
+
                         const calc = root.calcResult;
                         const web = root.webAction;
 

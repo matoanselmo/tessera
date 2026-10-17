@@ -17,6 +17,7 @@ BarWidget {
     foreground: root.lit ? ShellGlobals.materialColors.onerrorcontainer : ShellGlobals.materialColors.onprimarycontainer
 
     interactive: true
+    tooltip: root.active ? "" : "Power"
 
     Behavior on color {
         ColorAnimation {

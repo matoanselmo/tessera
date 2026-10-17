@@ -8,5 +8,6 @@ BarWidget {
     foreground: ShellGlobals.materialColors.onprimarycontainer
 
     interactive: true
+    tooltip: `Do not disturb ${Notifications.dnd ? "on" : "off"} · right-click for history`
     onClicked: Notifications.setDnd(!Notifications.dnd)
 }

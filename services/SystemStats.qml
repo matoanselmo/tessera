@@ -11,6 +11,9 @@ Singleton {
 
     property int cpuPercent: 0
     property int memPercent: 0
+    // In KiB, as /proc/meminfo reports them.
+    property real memUsed: 0
+    property real memTotal: 0
 
     readonly property int interval: 2000
 
@@ -74,8 +77,11 @@ Singleton {
                     break;
             }
 
-            if (total > 0)
+            if (total > 0) {
+                root.memTotal = total;
+                root.memUsed = total - available;
                 root.memPercent = Math.round(100 * (total - available) / total);
+            }
         }
     }
 

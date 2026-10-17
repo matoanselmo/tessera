@@ -19,6 +19,8 @@ BarWidget {
 
     icon: "window"
     label: root.title
+    // The label elides against the clock, so the full title lives here.
+    tooltip: root.title
     color: ShellGlobals.materialColors.primary
     foreground: ShellGlobals.materialColors.onprimary
 }

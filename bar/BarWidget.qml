@@ -16,6 +16,8 @@ Rectangle {
     property string label: ""
     property color foreground: ShellGlobals.materialColors.onprimary
     property bool interactive: false
+    // Shown after the pointer rests on the widget; works without `interactive`.
+    property string tooltip: ""
 
     // Pixel ceiling for the whole widget. 0 lets it size to its content, which
     // is what every fixed-width module wants; anything longer elides its label.
@@ -83,10 +85,17 @@ Rectangle {
     MouseArea {
         id: mouse
         anchors.fill: parent
-        enabled: root.interactive
-        hoverEnabled: root.interactive
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        enabled: root.interactive || root.tooltip !== ""
+        hoverEnabled: true
+        // A tooltip-only widget watches hover but lets clicks through.
+        acceptedButtons: root.interactive ? Qt.LeftButton | Qt.RightButton : Qt.NoButton
         onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
         onWheel: event => root.scrolled(event.angleDelta.y)
+    }
+
+    Tooltip {
+        target: root
+        text: root.tooltip
+        hovered: mouse.containsMouse
     }
 }

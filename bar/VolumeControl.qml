@@ -19,6 +19,7 @@ BarWidget {
     }
 
     label: Audio.muted ? "off" : `${Audio.percent}%`
+    tooltip: Audio.sink?.description ?? "No output device"
     color: ShellGlobals.materialColors.tertiarycontainer
     foreground: ShellGlobals.materialColors.ontertiarycontainer
 

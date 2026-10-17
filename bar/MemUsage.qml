@@ -7,6 +7,7 @@ BarWidget {
 
     icon: "memory"
     label: `${SystemStats.memPercent}%`
+    tooltip: `Memory: ${(SystemStats.memUsed / 1048576).toFixed(1)} of ${(SystemStats.memTotal / 1048576).toFixed(1)} GiB`
     color: root.memCritical ? ShellGlobals.materialColors.errorcontainer : ShellGlobals.materialColors.primary
     foreground: root.memCritical ? ShellGlobals.materialColors.onerrorcontainer : ShellGlobals.materialColors.onprimary
 

@@ -62,6 +62,13 @@ BarPopup {
                     color: hover.containsMouse ? ShellGlobals.materialColors.ontertiary : ShellGlobals.materialColors.ontertiarycontainer
                 }
 
+                Tooltip {
+                    target: row
+                    text: row.modelData.text
+                    hovered: hover.containsMouse
+                    edge: Edges.Left
+                }
+
                 MouseArea {
                     id: hover
                     anchors.fill: parent

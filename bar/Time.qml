@@ -17,6 +17,7 @@ BarWidget {
     foreground: ShellGlobals.materialColors.ontertiary
 
     interactive: true
+    tooltip: Qt.formatDateTime(clock.date, "dddd, d MMMM yyyy")
     onClicked: root.toggleRequested()
 
     SystemClock {

@@ -69,7 +69,7 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 Quickshell loads `~/.config/quickshell` by default:
 
 ```sh
-git clone https://github.com/<you>/tessera ~/.config/quickshell
+git clone https://github.com/matoanselmo/tessera ~/.config/quickshell
 mkdir -p ~/.config/tessera/backgrounds   # wallpapers for @bg
 ```
 

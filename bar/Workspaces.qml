@@ -1,12 +1,15 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 import qs
 import qs.services
 import qs.components
 
-// Workspaces belonging to this bar's own output. niri always keeps an empty
-// workspace at the end of each output, so empty ones are hidden unless active.
+// Workspaces belonging to this bar's own output, each showing its number and
+// the icons of the apps on it, in the order they sit. niri always keeps an
+// empty workspace at the end of each output, so empty ones are hidden unless
+// active.
 Rectangle {
     id: root
 
@@ -56,7 +59,11 @@ Rectangle {
                 readonly property bool isFocused: pill.workspace.is_active
                 readonly property bool isUrgent: pill.workspace.is_urgent
 
-                implicitWidth: pill.isFocused ? 28 : 22
+                readonly property var apps: Niri.windowsOn(pill.workspace.id)
+                // Past this many, the rest collapse into "+n".
+                readonly property int maxIcons: 4
+
+                implicitWidth: Math.max(pill.isFocused ? 28 : 22, content.implicitWidth + 14)
                 implicitHeight: 22
                 radius: ShellGlobals.radius
 
@@ -81,19 +88,89 @@ Rectangle {
                     CAnim {}
                 }
 
-                StyledText {
+                readonly property color foreground: {
+                    if (pill.isUrgent)
+                        return ShellGlobals.materialColors.onerrorcontainer;
+                    if (pill.isFocused)
+                        return ShellGlobals.materialColors.onsecondary;
+
+                    return ShellGlobals.materialColors.ontertiary;
+                }
+
+                Row {
+                    id: content
                     anchors.centerIn: parent
-                    text: pill.workspace.name ?? pill.workspace.idx
-                    font.pixelSize: ShellGlobals.fontSize
-                    font.bold: true
+                    spacing: 5
 
-                    color: {
-                        if (pill.isUrgent)
-                            return ShellGlobals.materialColors.onerrorcontainer;
-                        if (pill.isFocused)
-                            return ShellGlobals.materialColors.onsecondary;
+                    StyledText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: pill.workspace.name ?? pill.workspace.idx
+                        font.pixelSize: ShellGlobals.fontSize
+                        font.bold: true
+                        color: pill.foreground
 
-                        return ShellGlobals.materialColors.ontertiary;
+                        Behavior on color {
+                            CAnim {}
+                        }
+                    }
+
+                    Repeater {
+                        model: ScriptModel {
+                            // Keyed by window id, so a window moving or
+                            // retitling keeps its icon instead of rebuilding it.
+                            objectProp: "id"
+                            values: pill.apps.slice(0, pill.maxIcons)
+                        }
+
+                        Item {
+                            id: app
+                            required property var modelData
+
+                            readonly property string icon: {
+                                const entry = DesktopEntries.heuristicLookup(app.modelData.app_id ?? "");
+                                return Quickshell.iconPath(entry?.icon || app.modelData.app_id || "", true);
+                            }
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            implicitWidth: 14
+                            implicitHeight: 14
+                            // Quieter on workspaces you are not looking at.
+                            opacity: pill.isFocused ? 1 : 0.75
+
+                            Behavior on opacity {
+                                Anim {}
+                            }
+
+                            Anim on opacity {
+                                from: 0
+                                to: pill.isFocused ? 1 : 0.75
+                            }
+
+                            IconImage {
+                                anchors.fill: parent
+                                visible: app.icon !== ""
+                                source: app.icon
+                                asynchronous: true
+                            }
+
+                            // No themed icon for this app: a plain window glyph.
+                            TintedIcon {
+                                anchors.fill: parent
+                                visible: app.icon === ""
+                                size: 14
+                                source: Qt.resolvedUrl("icons/window.png")
+                                color: pill.foreground
+                            }
+                        }
+                    }
+
+                    StyledText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: pill.apps.length > pill.maxIcons
+                        text: `+${pill.apps.length - pill.maxIcons}`
+                        font.pixelSize: ShellGlobals.fontSize - 1
+                        font.bold: true
+                        color: pill.foreground
                     }
                 }
 

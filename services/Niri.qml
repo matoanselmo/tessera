@@ -24,6 +24,13 @@ Singleton {
         return root.workspaces.find(ws => ws.id === id) ?? null;
     }
 
+    // Windows on a workspace in the order they sit: by column, then by
+    // position within it; floating windows (no column) after the rest.
+    function windowsOn(workspaceId: var): var {
+        const pos = w => w.layout?.pos_in_scrolling_layout ?? [Infinity, w.id];
+        return root.windows.filter(w => w.workspace_id === workspaceId).sort((a, b) => (pos(a)[0] - pos(b)[0]) || (pos(a)[1] - pos(b)[1]) || (a.id - b.id));
+    }
+
     // Sends a niri action over the IPC socket, e.g. `{ ToggleOverview: {} }`.
     function action(request: var): void {
         if (!ipc.connected)
@@ -94,6 +101,10 @@ Singleton {
                 root.focusedWindowId = null;
         } else if (event.WindowFocusChanged) {
             root.focusedWindowId = event.WindowFocusChanged.id;
+        } else if (event.WindowLayoutsChanged) {
+            // `changes` is a list of [window id, layout] pairs.
+            const layouts = new Map(event.WindowLayoutsChanged.changes);
+            root.windows = root.windows.map(w => layouts.has(w.id) ? Object.assign({}, w, { layout: layouts.get(w.id) }) : w);
         }
     }
 

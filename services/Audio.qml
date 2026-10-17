@@ -13,6 +13,57 @@ Singleton {
     readonly property real volume: root.sink?.audio?.volume ?? 0
     readonly property int percent: Math.round(root.volume * 100)
 
+    // Icon file name in bar/icons for the current level.
+    readonly property string icon: {
+        if (root.muted || root.percent === 0)
+            return "volume-muted.svg";
+        if (root.percent < 34)
+            return "volume-low.svg";
+        if (root.percent < 67)
+            return "volume-medium.svg";
+
+        return "volume-high.svg";
+    }
+
+    // Fired when the default sink's volume or mute state changes, from the
+    // shell or anything else (media keys run wpctl). Switching sinks, startup
+    // and a sink coming up do not count, so an OSD can show on this alone.
+    signal adjusted
+
+    // The last settled reading, compared against to decide what changed.
+    property var last: ({
+            sink: null,
+            volume: -1,
+            muted: false
+        })
+
+    function check(): void {
+        if (!root.sink?.ready || !root.sink.audio)
+            return;
+
+        const prev = root.last;
+        root.last = {
+            sink: root.sink,
+            volume: root.volume,
+            muted: root.muted
+        };
+
+        if (prev.sink === root.sink && (prev.volume !== root.volume || prev.muted !== root.muted))
+            root.adjusted();
+    }
+
+    onSinkChanged: root.check()
+    onVolumeChanged: root.check()
+    onMutedChanged: root.check()
+
+    Connections {
+        target: root.sink
+
+        function onReadyChanged() {
+            root.check();
+        }
+    }
+
     // Hardware outputs only; per-application streams are sinks too.
     readonly property var sinks: [...Pipewire.nodes.values].filter(n => n.isSink && !n.isStream)
 

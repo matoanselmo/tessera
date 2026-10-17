@@ -7,17 +7,7 @@ BarWidget {
 
     signal toggleRequested
 
-    icon: {
-        if (Audio.muted || Audio.percent === 0)
-            return "volume-muted.svg";
-        if (Audio.percent < 34)
-            return "volume-low.svg";
-        if (Audio.percent < 67)
-            return "volume-medium.svg";
-
-        return "volume-high.svg";
-    }
-
+    icon: Audio.icon
     label: Audio.muted ? "off" : `${Audio.percent}%`
     tooltip: Audio.sink?.description ?? "No output device"
     color: ShellGlobals.materialColors.tertiarycontainer

@@ -17,6 +17,9 @@ Singleton {
 
     readonly property var focusedWindow: root.windows.find(w => w.id === root.focusedWindowId) ?? null
 
+    // Name of the output holding keyboard focus, e.g. "HDMI-A-2".
+    readonly property string focusedOutput: root.workspaces.find(ws => ws.is_focused)?.output ?? ""
+
     function workspaceById(id: var): var {
         return root.workspaces.find(ws => ws.id === id) ?? null;
     }

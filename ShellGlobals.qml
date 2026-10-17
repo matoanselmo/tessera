@@ -17,6 +17,11 @@ Singleton {
     // Shape
     readonly property int radius: 0
 
+    // Launcher web search. `%s` is replaced with the percent-encoded query;
+    // swap in e.g. "https://duckduckgo.com/?q=%s" / "DuckDuckGo" to change it.
+    readonly property string searchEngineUrl: "https://www.google.com/search?q=%s"
+    readonly property string searchEngineName: "Google"
+
     // Bar metrics
     readonly property int barThickness: 28
     readonly property int barGap: 4

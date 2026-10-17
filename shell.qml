@@ -5,10 +5,14 @@ import "bar"
 import "wallpaper"
 import "logout"
 import "launcher" as Launcher
+import "keybinds" as Keybinds
 
 Scope {
-    // Touching the singleton is what instantiates it and registers its IPC target.
-    Component.onCompleted: Launcher.Controller.init()
+    // Touching the singletons is what instantiates them and registers their IPC targets.
+    Component.onCompleted: {
+        Launcher.Controller.init();
+        Keybinds.Controller.init();
+    }
 
     Bar {}
     Wallpaper {}

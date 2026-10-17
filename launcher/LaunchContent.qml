@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import qs
+import "Calculator.js" as Calculator
+import "WebSearch.js" as WebSearch
 
 Item {
     id: root
@@ -11,6 +13,33 @@ Item {
     // an id belonging to Controller.qml; that resolves only through QML's
     // context chain and is exactly what `ComponentBehavior: Bound` forbids.
     signal closeRequested
+
+    readonly property string query: search.text.trim()
+
+    // Non-application rows. Both return null when the query isn't theirs, so
+    // they cost one regex test per keystroke on an ordinary app search.
+    readonly property var calcResult: Calculator.evaluate(root.query)
+    readonly property var webAction: WebSearch.actionFor(root.query, ShellGlobals.searchEngineUrl, ShellGlobals.searchEngineName)
+
+    function runEntry(entry: var): void {
+        if (!entry)
+            return;
+
+        switch (entry.kind) {
+        case "app":
+            entry.entry.execute();
+            break;
+        case "calc":
+            // `--` because a negative result is otherwise read as a flag.
+            Quickshell.execDetached(["wl-copy", "--", entry.copy]);
+            break;
+        case "web":
+            Quickshell.execDetached(["xdg-open", entry.url]);
+            break;
+        }
+
+        root.closeRequested();
+    }
 
     height: 50 + searchContainer.implicitHeight + list.topMargin * 2 + list.delegateHeight * 10
     width: 600
@@ -93,7 +122,7 @@ Item {
                 clip: true
                 cacheBuffer: 0
                 model: ScriptModel {
-                    values: DesktopEntries.applications.values.map(object => {
+                    readonly property var appRows: DesktopEntries.applications.values.map(object => {
                         const stxt = search.text.toLowerCase();
                         const ntxt = object.name.toLowerCase();
                         let si = 0;
@@ -169,7 +198,40 @@ Item {
                             return s;
 
                         return a.object.name.localeCompare(b.object.name);
-                    }).map(entry => entry.object)
+                    }).map(entry => ({
+                        kind: "app",
+                        entry: entry.object,
+                        name: entry.object.name,
+                        icon: entry.object.icon,
+                        hint: ""
+                    }))
+
+                    values: {
+                        const calc = root.calcResult;
+                        const web = root.webAction;
+
+                        const calcRows = calc ? [{
+                            kind: "calc",
+                            name: calc.display,
+                            glyph: "=",
+                            hint: "Copy",
+                            copy: calc.copy
+                        }] : [];
+
+                        const webRows = web ? [{
+                            kind: "web",
+                            name: web.name,
+                            glyph: web.kind === "open" ? "\u2197" : "\u2315",
+                            hint: web.hint,
+                            url: web.url
+                        }] : [];
+
+                        // A bare address is almost certainly what you meant, so
+                        // it outranks fuzzy app matches; a search term does not.
+                        return web && web.kind === "open"
+                            ? calcRows.concat(webRows, appRows)
+                            : calcRows.concat(appRows, webRows);
+                    }
 
                     onValuesChanged: list.currentIndex = 0
                 }
@@ -242,14 +304,13 @@ Item {
                 readonly property real delegateHeight: 36
 
                 delegate: MouseArea {
-                    required property DesktopEntry modelData
+                    required property var modelData
 
                     implicitHeight: list.delegateHeight
                     implicitWidth: ListView.view.width
 
                     function activate(): void {
-                        modelData.execute();
-                        root.closeRequested();
+                        root.runEntry(modelData);
                     }
 
                     onClicked: activate()
@@ -260,7 +321,9 @@ Item {
                         anchors {
                             verticalCenter: parent.verticalCenter
                             left: parent.left
+                            right: parent.right
                             leftMargin: 16
+                            rightMargin: 16
                         }
 
                         // Fixed slot so names stay aligned even when an entry has
@@ -277,7 +340,21 @@ Item {
                                 anchors.fill: parent
                                 asynchronous: true
                                 visible: entryIcon.source !== ""
-                                source: Quickshell.iconPath(modelData.icon, true)
+                                source: modelData.icon ? Quickshell.iconPath(modelData.icon, true) : ""
+                            }
+
+                            // The synthetic rows use a glyph rather than a theme
+                            // icon: Quickshell resolves only hicolor application
+                            // icons here, so `system-search` and friends come back
+                            // empty and there is nothing to draw.
+                            Text {
+                                anchors.centerIn: parent
+                                visible: text !== ""
+                                text: modelData.glyph ?? ""
+                                color: ShellGlobals.materialColors.ontertiarycontainer
+                                font.family: ShellGlobals.fontFamily
+                                font.pixelSize: 19
+                                font.bold: true
                             }
                         }
 
@@ -287,6 +364,20 @@ Item {
                             font.pixelSize: 14
                             font.family: ShellGlobals.fontFamily
                             font.bold: true
+                            elide: Text.ElideRight
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.fillWidth: true
+                        }
+
+                        // Right-hand affordance telling you what Enter does on
+                        // the non-application rows; blank for apps.
+                        Text {
+                            text: modelData.hint ?? ""
+                            visible: text !== ""
+                            color: ShellGlobals.materialColors.ontertiary
+                            opacity: 0.6
+                            font.pixelSize: 12
+                            font.family: ShellGlobals.fontFamily
                             Layout.alignment: Qt.AlignVCenter
                         }
                     }

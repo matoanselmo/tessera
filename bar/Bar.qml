@@ -43,6 +43,23 @@ Variants {
             anchorItem: volumeControl
         }
 
+        ClockMenu {
+            id: clockMenu
+            bar: bar
+            anchorItem: clock
+        }
+
+        DismissLayer {
+            screen: bar.screen
+            active: volumeMenu.visible || clockMenu.visible || menu.visible
+
+            onDismissed: {
+                volumeMenu.close();
+                clockMenu.close();
+                NotifServer.menuOpen = false;
+            }
+        }
+
         Item {
             anchors.fill: parent
             anchors.margins: ShellGlobals.barGap
@@ -73,6 +90,7 @@ Variants {
                 id: clock
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
+                onToggleRequested: clockMenu.toggle()
             }
 
             RowLayout {
@@ -88,7 +106,13 @@ Variants {
 
                 CpuUsage {}
                 MemUsage {}
-                Dnd {}
+                // Left click toggles do-not-disturb, right click opens the list.
+                // Decided off the popup's own visibility: a click that dismisses
+                // the menu through the DismissLayer lands here while it is still
+                // fading, and should not bounce it back open.
+                Dnd {
+                    onRightClicked: NotifServer.menuOpen = !menu.visible
+                }
                 PowerButton {}
             }
         }

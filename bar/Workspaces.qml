@@ -1,17 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import qs
 
-// Workspaces belonging to this bar's own monitor. Hyprland creates workspaces
-// lazily, so only the ones that currently exist are shown.
+// Workspaces belonging to this bar's own output. niri always keeps an empty
+// workspace at the end of each output, so empty ones are hidden unless active.
 Rectangle {
     id: root
 
     required property ShellScreen screen
-
-    readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.screen)
 
     color: ShellGlobals.materialColors.primary
     radius: ShellGlobals.radius
@@ -24,6 +21,14 @@ Rectangle {
 
     visible: repeater.count > 0
 
+    // Below the pills, so their left-click keeps priority; a right press there
+    // is not accepted by them and falls through to here.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        onClicked: Niri.toggleOverview()
+    }
+
     RowLayout {
         id: row
         anchors.centerIn: parent
@@ -33,17 +38,21 @@ Rectangle {
             id: repeater
 
             model: ScriptModel {
-                // Negative ids are Hyprland's special workspaces, which do not
-                // belong in a linear strip.
-                values: [...Hyprland.workspaces.values].filter(ws => ws.id >= 0 && ws.monitor === root.monitor).sort((a, b) => a.id - b.id)
+                // Keyed by id: niri replaces every workspace object on each
+                // event, and comparing by identity would rebuild the pills and
+                // cut their animations short.
+                objectProp: "id"
+                values: Niri.workspaces.filter(ws => ws.output === root.screen.name && (ws.is_active || ws.active_window_id !== null)).sort((a, b) => a.idx - b.idx)
             }
 
             delegate: Rectangle {
                 id: pill
-                required property HyprlandWorkspace modelData
+                required property var modelData
 
-                readonly property bool isFocused: pill.modelData.focused
-                readonly property bool isUrgent: pill.modelData.urgent
+                // Looked up live so state stays current on a reused delegate.
+                readonly property var workspace: Niri.workspaceById(pill.modelData.id) ?? pill.modelData
+                readonly property bool isFocused: pill.workspace.is_active
+                readonly property bool isUrgent: pill.workspace.is_urgent
 
                 implicitWidth: pill.isFocused ? 28 : 22
                 implicitHeight: 22
@@ -73,7 +82,7 @@ Rectangle {
 
                 Text {
                     anchors.centerIn: parent
-                    text: pill.modelData.name
+                    text: pill.workspace.name ?? pill.workspace.idx
                     font.family: ShellGlobals.fontFamily
                     font.pixelSize: ShellGlobals.fontSize
                     font.bold: true
@@ -91,7 +100,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: pill.modelData.activate()
+                    onClicked: Niri.focusWorkspace(pill.workspace)
                 }
             }
         }

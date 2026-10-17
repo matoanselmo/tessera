@@ -12,6 +12,9 @@ Rectangle {
     // so SVG icons can be named explicitly.
     property string icon: ""
     readonly property string iconSource: root.icon === "" ? "" : `icons/${root.icon}${root.icon.includes(".") ? "" : ".png"}`
+    // Optional second icon drawn before the main one, same naming rules.
+    property string badge: ""
+    readonly property string badgeSource: root.badge === "" ? "" : `icons/${root.badge}${root.badge.includes(".") ? "" : ".png"}`
     property string label: ""
     property color foreground: ShellGlobals.materialColors.onprimary
     property int iconRotation: 0
@@ -24,6 +27,7 @@ Rectangle {
     readonly property alias hovered: mouse.containsMouse
 
     signal clicked
+    signal rightClicked
     signal scrolled(int delta)
 
     color: ShellGlobals.materialColors.primary
@@ -38,15 +42,41 @@ Rectangle {
     RowLayout {
         id: row
 
+        // With a label the row spans the widget so the text can elide; without
+        // one nothing fills the width, so the icons would pack to the left of
+        // any widget given a width beyond its content. Centre them instead.
         anchors {
-            left: parent.left
-            right: parent.right
+            left: root.label !== "" ? parent.left : undefined
+            right: root.label !== "" ? parent.right : undefined
+            horizontalCenter: root.label !== "" ? undefined : parent.horizontalCenter
             verticalCenter: parent.verticalCenter
             leftMargin: 8
             rightMargin: 8
         }
 
-        spacing: root.label !== "" && root.icon !== "" ? 6 : 0
+        spacing: (root.label !== "" && root.icon !== "") || root.badge !== "" ? 6 : 0
+
+        Item {
+            visible: root.badge !== ""
+            Layout.preferredWidth: ShellGlobals.iconSize
+            Layout.preferredHeight: ShellGlobals.iconSize
+            Layout.alignment: Qt.AlignVCenter
+
+            Image {
+                id: badgeImage
+                anchors.fill: parent
+                source: root.badgeSource
+                smooth: true
+                mipmap: true
+                visible: false
+            }
+
+            ColorOverlay {
+                anchors.fill: parent
+                source: badgeImage
+                color: root.foreground
+            }
+        }
 
         Item {
             visible: root.icon !== ""
@@ -90,7 +120,8 @@ Rectangle {
         anchors.fill: parent
         enabled: root.interactive
         hoverEnabled: root.interactive
-        onClicked: root.clicked()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
         onWheel: event => root.scrolled(event.angleDelta.y)
     }
 }

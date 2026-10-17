@@ -32,13 +32,29 @@ PopupWindow {
         objects: menu.sinks
     }
 
+    // Left on for compositors that honour a layer-shell popup grab; niri does
+    // not, so outside clicks are actually caught by the bar's DismissLayer.
+    // Resetting the card means the next open fades in again.
+    grabFocus: true
+
+    onVisibleChanged: {
+        if (!menu.visible)
+            card.state = "Closed";
+    }
+
     function toggle(): void {
         if (menu.visible) {
-            card.state = "Closed";
+            menu.close();
         } else {
             menu.visible = true;
             card.state = "Open";
         }
+    }
+
+    // Starts the fade; `card.onOpacityChanged` clears `visible` at the end.
+    function close(): void {
+        if (menu.visible)
+            card.state = "Closed";
     }
 
     function setVolume(fraction: real): void {

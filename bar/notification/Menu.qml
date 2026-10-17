@@ -26,6 +26,16 @@ PopupWindow {
     // once, not once per screen.
     readonly property bool shouldShow: NotifServer.menuOpen
 
+    // Left on for compositors that honour a layer-shell popup grab; niri does
+    // not, so outside clicks are actually caught by the bar's DismissLayer.
+    // Going through the singleton keeps the IPC toggle in step.
+    grabFocus: true
+
+    onVisibleChanged: {
+        if (!panel.visible)
+            NotifServer.menuOpen = false;
+    }
+
     onShouldShowChanged: {
         if (panel.shouldShow) {
             panel.visible = true;

@@ -7,9 +7,9 @@ Scope {
 	LogoutMenu {
 		// Ordered least to most disruptive.
 		LogoutButton {
-			// Emits the standard lock signal. Inert until a locker is running to
-			// answer it; on Hyprland that is normally hyprlock.
-			command: "command -v hyprlock >/dev/null 2>&1 && hyprlock || loginctl lock-session"
+			// swaylock is the installed locker; the lock signal is the fallback and
+			// is inert unless something is listening for it.
+			command: "command -v swaylock >/dev/null 2>&1 && swaylock -f || loginctl lock-session"
 			keybind: Qt.Key_L
 			text: "Lock"
 			icon: "lock"
@@ -23,9 +23,8 @@ Scope {
 		}
 
 		LogoutButton {
-			// This session is uwsm-managed, so stopping the unit is the clean
-			// exit; the dispatch is the fallback for a bare Hyprland session.
-			command: "command -v uwsm >/dev/null 2>&1 && uwsm stop || hyprctl dispatch 'hl.dsp.exit()'"
+			// The menu is its own confirmation, so skip niri's prompt.
+			command: "niri msg action quit --skip-confirmation"
 			keybind: Qt.Key_E
 			text: "Log out"
 			icon: "logout"

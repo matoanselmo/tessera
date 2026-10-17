@@ -30,6 +30,7 @@ Item {
         switch (entry.kind) {
         case "app":
             entry.entry.execute();
+            History.record(entry.entry.id);
             break;
         case "calc":
             // `--` because a negative result is otherwise read as a flag.
@@ -124,8 +125,9 @@ Item {
                 clip: true
                 cacheBuffer: 0
                 model: ScriptModel {
-                    // Searched on the trimmed query, like the calculator and web rows.
-                    readonly property var appRows: Fuzzy.rank(root.query, DesktopEntries.applications.values, app => app.name).map(app => ({
+                    // Searched on the trimmed query, like the calculator and web
+                    // rows; apps you launch often win among equal matches.
+                    readonly property var appRows: Fuzzy.rank(root.query, DesktopEntries.applications.values, app => app.name, app => History.score(app.id)).map(app => ({
                         kind: "app",
                         entry: app,
                         name: app.name,

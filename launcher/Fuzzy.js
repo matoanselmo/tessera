@@ -39,9 +39,20 @@ function match(query, name) {
     return runs;
 }
 
-// Longer runs first, then earlier runs, then fewer runs, then shorter names.
+// The first run decides (longer, then earlier), so what you typed always
+// matters most. Among equally good matches the more-used app wins; after that,
+// the remaining runs, fewer runs, then shorter names.
 function compare(a, b) {
-    for (let i = 0; i < a.runs.length && i < b.runs.length; i++) {
+    if (a.runs.length > 0 && b.runs.length > 0) {
+        const s = (b.runs[0].length - a.runs[0].length) || (a.runs[0].index - b.runs[0].index);
+        if (s !== 0)
+            return s;
+    }
+
+    if (a.boost !== b.boost)
+        return b.boost - a.boost;
+
+    for (let i = 1; i < a.runs.length && i < b.runs.length; i++) {
         const s = (b.runs[i].length - a.runs[i].length) || (a.runs[i].index - b.runs[i].index);
         if (s !== 0)
             return s;
@@ -53,9 +64,10 @@ function compare(a, b) {
 }
 
 /// Filters `items` to those whose `nameOf(item)` matches `query`, best first.
-function rank(query, items, nameOf) {
+/// `boostOf(item)`, if given, ranks equally good matches (higher first).
+function rank(query, items, nameOf, boostOf) {
     return items
-        .map(item => ({ item: item, name: nameOf(item), runs: match(query, nameOf(item)) }))
+        .map(item => ({ item: item, name: nameOf(item), runs: match(query, nameOf(item)), boost: boostOf ? boostOf(item) : 0 }))
         .filter(e => e.runs !== null)
         .sort(compare)
         .map(e => e.item);

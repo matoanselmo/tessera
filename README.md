@@ -20,6 +20,7 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 | `keybinds/` | Searchable overlay of the binds in the niri config. |
 | `logout/` | The power actions (lock, suspend, log out, reboot, shutdown) and the power menu's open state, in `LogoutState`. `bar/PowerMenu.qml` draws them. |
 | `lock/` | Lock screen: `WlSessionLock` with a blurred wallpaper, clock and password field, checked through PAM (`ShellGlobals.lockPamConfig`/`lockPamDir`). `preview` shows it in a normal window without locking. |
+| `terminal/` | Popup terminal: a fresh foot (app id `shell-popup`, floated and centred by a niri window rule) that closes as soon as it loses focus. |
 | `wallpaper/` | Background layer per screen. |
 
 Import services and components with `import qs.services` and `import qs.components`.
@@ -55,6 +56,7 @@ qs ipc call clipboard     toggle | open          # the launcher, in clipboard mo
 qs ipc call keybinds      toggle | open | close
 qs ipc call logout        toggle | open | close
 qs ipc call lock          lock | preview | closePreview
+qs ipc call terminal      toggle | open | close   # popup terminal
 qs ipc call volume        toggle | open | close
 qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close

@@ -7,6 +7,7 @@ import "osd"
 import "lock"
 import "launcher" as Launcher
 import "keybinds" as Keybinds
+import "terminal" as Terminal
 import qs.services
 
 Scope {
@@ -15,6 +16,7 @@ Scope {
         Launcher.Controller.init();
         Keybinds.Controller.init();
         Clipboard.init();
+        Terminal.PopupTerminal.init();
     }
 
     Bar {}

@@ -31,6 +31,7 @@ Bind these in niri with `spawn "qs" "ipc" "call" ...`:
 qs ipc call launcher      toggle | open | close
 qs ipc call keybinds      toggle | open | close
 qs ipc call logout        toggle | open | close
+qs ipc call volume        toggle | open | close
 qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff

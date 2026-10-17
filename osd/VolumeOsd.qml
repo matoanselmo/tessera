@@ -22,6 +22,10 @@ Scope {
         target: Audio
 
         function onAdjusted() {
+            // The volume panel already shows the level, right under the bar.
+            if (Audio.panelOpen)
+                return;
+
             root.alive = true;
             root.shown = true;
             hide.restart();

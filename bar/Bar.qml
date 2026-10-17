@@ -31,7 +31,7 @@ Variants {
 
         // Every menu and panel that drops from this bar (BarPopup or BarPanel).
         // Listing one here is all it takes for outside clicks to dismiss it.
-        readonly property var popups: [menu, volumeMenu, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel]
+        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel]
 
         Menu {
             id: menu
@@ -44,8 +44,8 @@ Variants {
             menu: menu
         }
 
-        VolumeMenu {
-            id: volumeMenu
+        VolumePanel {
+            id: volumePanel
             bar: bar
             anchorItem: volumeControl
         }
@@ -131,7 +131,7 @@ Variants {
 
                 VolumeControl {
                     id: volumeControl
-                    onToggleRequested: volumeMenu.toggle()
+                    onToggleRequested: Audio.panelOpen = !volumePanel.visible
                 }
 
                 CpuUsage {}

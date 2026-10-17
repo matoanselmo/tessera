@@ -21,6 +21,8 @@ ColumnLayout {
     // means "do the obvious thing" with it.
     signal selected(int index)
     signal activated(int index)
+    // Mouse wheel over a row, for tables whose rows have a level to adjust.
+    signal scrolled(int index, int delta)
 
     readonly property int rowHeight: 22
 
@@ -129,6 +131,10 @@ ColumnLayout {
                     table.selected(row.index);
                 }
                 onDoubleClicked: table.activated(row.index)
+                onWheel: event => {
+                    table.currentIndex = row.index;
+                    table.scrolled(row.index, event.angleDelta.y);
+                }
             }
         }
     }

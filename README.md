@@ -11,9 +11,9 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 | Path | What lives there |
 | --- | --- |
 | `shell.qml` | Entry point. Instantiates the bar and wallpaper, and the launcher and keybinds singletons. |
-| `ShellGlobals.qml` | Config and theme: fonts, colours (`materialColors`), sizes, animation durations, search engine, world clocks. |
+| `ShellGlobals.qml` | Config and theme: fonts, colours (`materialColors`), sizes, motion (durations, easing curves, and `motionScale`, one multiplier for the whole shell's pace), search engine, world clocks. |
 | `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`, `Internet` (nmcli + Wi-Fi), `BluetoothState`. |
-| `components/` | Reusable UI pieces with no data of their own: `BarPopup`, `BarPanel` (a dropdown that can take the keyboard), `OverlayController`, `Tooltip`, `TintedIcon`, `StyledText`, `Divider`, `Track`, and the terminal-styled `TuiPane`, `TuiTable`, `TuiFooter`. |
+| `components/` | Reusable UI pieces with no data of their own: `Anim`/`CAnim` (animations on the motion tokens), `Reveal` (shared entrance/exit), `FadeCard`, `BarPopup`, `BarPanel` (a dropdown that can take the keyboard), `OverlayController`, `Tooltip`, `TintedIcon`, `StyledText`, `Divider`, `Track`, and the terminal-styled `TuiPane`, `TuiTable`, `TuiFooter`. |
 | `bar/` | The bar (one per screen), its widgets including the system tray, and the menus that drop from it. |
 | `osd/` | On-screen displays: the volume OSD shown on the focused output. |
 | `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`) and fuzzy matching (`Fuzzy.js`). |
@@ -65,3 +65,8 @@ instantiate on first use, so register IPC handlers in a singleton that
 **A world clock.** Add `{ name, offsetMinutes }` to
 `ShellGlobals.worldClocks`. Offsets are fixed, so this is exact only for zones
 without daylight saving.
+
+**Motion.** Animate with `Anim` and `CAnim` rather than raw `NumberAnimation`
+and `ColorAnimation`, and set `time`/`curve` instead of `duration`, so
+`ShellGlobals.motionScale` keeps applying. Things that appear should use
+`Reveal`, which plays the exit before anything unmaps.

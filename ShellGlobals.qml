@@ -72,11 +72,4 @@ Singleton {
         readonly property color surfacecontainerlowest: "#181a1f"
         readonly property color surfacedim: "#181a1f"
     }
-
-    function adjustTextOverflow(text, maxWidth) {
-        if (text.length > maxWidth) {
-            return text.substring(0, maxWidth - 3) + "...";
-        }
-        return text;
-    }
 }

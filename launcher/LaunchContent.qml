@@ -5,6 +5,7 @@ import Quickshell.Widgets
 import qs
 import "Calculator.js" as Calculator
 import "WebSearch.js" as WebSearch
+import "Fuzzy.js" as Fuzzy
 
 Item {
     id: root
@@ -55,7 +56,7 @@ Item {
         }
         width: parent.width
         color: ShellGlobals.materialColors.tertiarycontainer
-        radius: 0
+        radius: ShellGlobals.radius
 
         ColumnLayout {
             anchors.fill: parent
@@ -68,7 +69,7 @@ Item {
                 Layout.fillWidth: true
                 implicitHeight: searchbox.implicitHeight + 10
                 color: ShellGlobals.materialColors.secondarycontainer
-                radius: 0
+                radius: ShellGlobals.radius
 
                 RowLayout {
                     id: searchbox
@@ -122,87 +123,12 @@ Item {
                 clip: true
                 cacheBuffer: 0
                 model: ScriptModel {
-                    readonly property var appRows: DesktopEntries.applications.values.map(object => {
-                        const stxt = search.text.toLowerCase();
-                        const ntxt = object.name.toLowerCase();
-                        let si = 0;
-                        let ni = 0;
-
-                        let matches = [];
-                        let startMatch = -1;
-
-                        for (let si = 0; si != stxt.length; ++si) {
-                            const sc = stxt[si];
-
-                            while (true) {
-                                if (ni == ntxt.length)
-                                    return null;
-
-                                const nc = ntxt[ni++];
-
-                                if (nc == sc) {
-                                    if (startMatch == -1)
-                                        startMatch = ni;
-                                    break;
-                                } else {
-                                    if (startMatch != -1) {
-                                        matches.push({
-                                            index: startMatch,
-                                            length: ni - startMatch
-                                        });
-
-                                        startMatch = -1;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (startMatch != -1) {
-                            matches.push({
-                                index: startMatch,
-                                length: ni - startMatch + 1
-                            });
-                        }
-
-                        return {
-                            object: object,
-                            matches: matches
-                        };
-                    }).filter(entry => entry !== null).sort((a, b) => {
-                        let ai = 0;
-                        let bi = 0;
-                        let s = 0;
-
-                        while (ai != a.matches.length && bi != b.matches.length) {
-                            const am = a.matches[ai];
-                            const bm = b.matches[bi];
-
-                            s = bm.length - am.length;
-                            if (s != 0)
-                                return s;
-
-                            s = am.index - bm.index;
-                            if (s != 0)
-                                return s;
-
-                            ++ai;
-                            ++bi;
-                        }
-
-                        s = a.matches.length - b.matches.length;
-                        if (s != 0)
-                            return s;
-
-                        s = a.object.name.length - b.object.name.length;
-                        if (s != 0)
-                            return s;
-
-                        return a.object.name.localeCompare(b.object.name);
-                    }).map(entry => ({
+                    // Searched on the trimmed query, like the calculator and web rows.
+                    readonly property var appRows: Fuzzy.rank(root.query, DesktopEntries.applications.values, app => app.name).map(app => ({
                         kind: "app",
-                        entry: entry.object,
-                        name: entry.object.name,
-                        icon: entry.object.icon,
+                        entry: app,
+                        name: app.name,
+                        icon: app.icon,
                         hint: ""
                     }))
 
@@ -289,7 +215,7 @@ Item {
 
                 highlight: Rectangle {
                     color: ShellGlobals.materialColors.tertiary
-                    radius: 0
+                    radius: ShellGlobals.radius
                 }
 
                 keyNavigationEnabled: true

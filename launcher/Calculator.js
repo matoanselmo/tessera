@@ -51,6 +51,10 @@ const FUNCTIONS = {
     rad: [1, x => x * Math.PI / 180]
 };
 
+// Any function or multi-letter constant, built from the tables so a new
+// entry is recognised without touching the pre-filter in `evaluate()`.
+const NAMED_RE = new RegExp("\\b(?:" + Object.keys(FUNCTIONS).concat(Object.keys(CONSTANTS).filter(k => /^[a-z]{2,}$/.test(k))).join("|") + ")\\b", "i");
+
 const NUMBER_RE = /^(?:0[xX][0-9a-fA-F]+|0[bB][01]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/;
 const IDENT_RE = /^[a-zA-Zπ][a-zA-Z0-9]*/;
 
@@ -274,7 +278,7 @@ function evaluate(input) {
 
     // An expression has to actually compute something. Without this every
     // bare app name that happens to parse (`e`, `5`) would claim the top row.
-    if (!/[-+*/%^()]|\b(?:sqrt|cbrt|sin|cos|tan|log|log2|log10|ln|exp|abs|sign|round|floor|ceil|trunc|min|max|pow|hypot|sind|cosd|tand|deg|rad|pi|tau)\b|π|\d\s*(?:pi|tau)\b/i.test(src))
+    if (!/[-+*/%^()]|π|\d\s*(?:pi|tau)\b/i.test(src) && !NAMED_RE.test(src))
         return null;
     if (!/\d|\bpi\b|\btau\b|\be\b|π/i.test(src))
         return null;
@@ -293,6 +297,6 @@ function evaluate(input) {
     return {
         display: display,
         // Derived from the displayed text so the two can never disagree.
-        copy: isFinite(value) ? display.replace(/\u2009/g, "") : String(value)
+        copy: isFinite(value) ? display.replace(/\s/g, "") : String(value)
     };
 }

@@ -43,16 +43,12 @@ Rectangle {
         id: row
 
         // With a label the row spans the widget so the text can elide; without
-        // one nothing fills the width, so the icons would pack to the left of
-        // any widget given a width beyond its content. Centre them instead.
-        anchors {
-            left: root.label !== "" ? parent.left : undefined
-            right: root.label !== "" ? parent.right : undefined
-            horizontalCenter: root.label !== "" ? undefined : parent.horizontalCenter
-            verticalCenter: parent.verticalCenter
-            leftMargin: 8
-            rightMargin: 8
-        }
+        // one it keeps its natural width and sits centred, so a widget given
+        // more room than its icons need does not pack them to the left.
+        // Switching anchors on the label instead tripped Qt's "left, right and
+        // horizontalCenter at once" warning while the bindings settled.
+        anchors.centerIn: parent
+        width: root.label !== "" ? parent.width - 16 : implicitWidth
 
         spacing: (root.label !== "" && root.icon !== "") || root.badge !== "" ? 6 : 0
 

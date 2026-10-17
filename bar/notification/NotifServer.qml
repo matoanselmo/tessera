@@ -10,7 +10,6 @@ Singleton {
 
     property NotificationServer notifServer: server
     property ScriptModel notifications: sList
-    property int notifCount: server.trackedNotifications.values.length
 
     // Retention cap, so a chatty app cannot grow the tracked list forever.
     readonly property int maxTracked: 50

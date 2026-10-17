@@ -32,6 +32,12 @@ Singleton {
         }
     ]
 
+    // Lock screen authentication: the PAM service and the directory it lives
+    // in. openSUSE ships swaylock's (`auth include login`) in its vendor
+    // directory rather than /etc/pam.d.
+    readonly property string lockPamConfig: "swaylock"
+    readonly property string lockPamDir: "/usr/lib/pam.d"
+
     // Bar metrics
     readonly property int barThickness: 28
     readonly property int barGap: 4

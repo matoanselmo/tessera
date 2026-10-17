@@ -19,9 +19,17 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 | `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`), fuzzy matching (`Fuzzy.js`) and usage history (`History.qml`). Start a query with `;` for clipboard history: Enter copies an entry back, Shift+Delete forgets it. |
 | `keybinds/` | Searchable overlay of the binds in the niri config. |
 | `logout/` | The power actions (lock, suspend, log out, reboot, shutdown) and the power menu's open state, in `LogoutState`. `bar/PowerMenu.qml` draws them. |
+| `lock/` | Lock screen: `WlSessionLock` with a blurred wallpaper, clock and password field, checked through PAM (`ShellGlobals.lockPamConfig`/`lockPamDir`). `preview` shows it in a normal window without locking. |
 | `wallpaper/` | Background layer per screen. |
 
 Import services and components with `import qs.services` and `import qs.components`.
+
+## If the lock screen ever gets stuck
+
+Should the shell crash while the session is locked, niri keeps the screen
+locked (blank) until a lock client unlocks it. Switch to a TTY
+(Ctrl+Alt+F2), log in, and run `WAYLAND_DISPLAY=wayland-1 swaylock`, then
+switch back and unlock with your password.
 
 ## Tests
 
@@ -39,6 +47,7 @@ qs ipc call launcher      toggle | open | close
 qs ipc call clipboard     toggle | open          # the launcher, in clipboard mode
 qs ipc call keybinds      toggle | open | close
 qs ipc call logout        toggle | open | close
+qs ipc call lock          lock | preview | closePreview
 qs ipc call volume        toggle | open | close
 qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close

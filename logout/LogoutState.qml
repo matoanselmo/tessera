@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.lock
 
 // The power actions, plus the open state of the menu that lists them. The
 // menu drops from the power button on every bar, so its state and the IPC
@@ -17,9 +18,7 @@ Singleton {
     // Ordered least to most disruptive.
     readonly property list<LogoutButton> actions: [
         LogoutButton {
-            // swaylock is the installed locker; the lock signal is the fallback and
-            // is inert unless something is listening for it.
-            command: "command -v swaylock >/dev/null 2>&1 && swaylock -f || loginctl lock-session"
+            run: () => LockState.lock()
             text: "Lock"
             icon: "lock"
         },

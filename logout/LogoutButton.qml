@@ -1,12 +1,16 @@
 import QtQuick
 import Quickshell
 
-// One entry in the power menu: a shell command with a label and an icon
-// from logout/icons.
+// One entry in the power menu: a shell command (or an action inside the
+// shell) with a label and an icon from logout/icons.
 QtObject {
     id: button
 
-    required property string command
+    // Run with sh -c, unless `run` is set.
+    property string command: ""
+    // A function to call instead of a command, for actions the shell does
+    // itself (locking).
+    property var run: null
     required property string text
     required property string icon
 
@@ -19,6 +23,9 @@ QtObject {
     readonly property url iconUrl: Qt.resolvedUrl(`icons/${button.icon}.png`)
 
     function exec(): void {
-        Quickshell.execDetached(["sh", "-c", button.command]);
+        if (button.run)
+            button.run();
+        else
+            Quickshell.execDetached(["sh", "-c", button.command]);
     }
 }

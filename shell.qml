@@ -4,6 +4,7 @@ import QtQuick
 import "bar"
 import "wallpaper"
 import "osd"
+import "lock"
 import "launcher" as Launcher
 import "keybinds" as Keybinds
 import qs.services
@@ -19,4 +20,5 @@ Scope {
     Bar {}
     Wallpaper {}
     VolumeOsd {}
+    Lock {}
 }

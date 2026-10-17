@@ -5,17 +5,14 @@ import qs
 import qs.services
 import qs.components
 
-// Drops down from the centred clock: local and Brasília time, a month
-// calendar, and controls for whichever media player is active.
+// Drops down from the centred clock: local time beside any world clocks set
+// in ShellGlobals, a month calendar, and controls for whichever media player
+// is active.
 BarPopup {
     id: menu
 
     required property PanelWindow bar
     required property Item anchorItem
-
-    // Brasília has been fixed at UTC-3 since Brazil dropped DST in 2019, so a
-    // constant offset is exact and avoids relying on Intl in the JS engine.
-    readonly property int brasiliaOffsetMinutes: -180
 
     readonly property var player: Media.player
 
@@ -27,7 +24,9 @@ BarPopup {
     anchor.gravity: Edges.Bottom
     anchor.margins.top: ShellGlobals.barGap
 
-    implicitWidth: 300
+    // Grows past the default when several world clocks need the room. Only the
+    // clock row counts, so a long track title still elides instead.
+    implicitWidth: Math.max(300, clocks.implicitWidth + ShellGlobals.popupPadding * 2)
     implicitHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
 
     SystemClock {
@@ -65,16 +64,19 @@ BarPopup {
         return `${Math.floor(s / 60)}:${menu.pad(s % 60)}`;
     }
 
-    readonly property var brasilia: {
+    // `{ time, label }` for a fixed UTC offset at the current minute. Shifting
+    // the instant by the offset and reading it back in UTC gives that zone's
+    // wall clock without needing Intl in the JS engine.
+    function worldTime(name: string, offsetMinutes: int): var {
         const now = clock.date;
-        const b = new Date(now.getTime() + menu.brasiliaOffsetMinutes * 60000);
-        // Compare calendar days so the label can say when Brasília is ahead.
+        const z = new Date(now.getTime() + offsetMinutes * 60000);
+        // Compare calendar days so the label can say when the zone is ahead.
         const localDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-        const brDay = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
-        const diff = Math.round((brDay - localDay) / 86400000);
+        const zoneDay = Date.UTC(z.getUTCFullYear(), z.getUTCMonth(), z.getUTCDate());
+        const diff = Math.round((zoneDay - localDay) / 86400000);
         return {
-            time: `${menu.pad(b.getUTCHours())}:${menu.pad(b.getUTCMinutes())}`,
-            day: diff > 0 ? "tomorrow" : diff < 0 ? "yesterday" : "today"
+            time: `${menu.pad(z.getUTCHours())}:${menu.pad(z.getUTCMinutes())}`,
+            label: diff > 0 ? `${name}, tomorrow` : diff < 0 ? `${name}, yesterday` : name
         };
     }
 
@@ -90,6 +92,7 @@ BarPopup {
 
         // Clocks
         RowLayout {
+            id: clocks
             Layout.fillWidth: true
             spacing: 10
 
@@ -110,26 +113,34 @@ BarPopup {
             }
 
             // A layout's maximum width is capped by its children, so the
-            // column's fillWidth alone cannot push Brasília to the edge.
+            // column's fillWidth alone cannot push the world clocks to the edge.
             Item {
                 Layout.fillWidth: true
             }
 
-            ColumnLayout {
-                Layout.alignment: Qt.AlignRight
-                spacing: 0
+            Repeater {
+                model: ShellGlobals.worldClocks
 
-                StyledText {
-                    Layout.alignment: Qt.AlignRight
-                    text: menu.brasilia.time
-                    font.bold: true
-                    font.pixelSize: 26
-                    color: ShellGlobals.materialColors.onprimarycontainer
-                }
+                ColumnLayout {
+                    id: zone
+                    required property var modelData
+                    readonly property var now: menu.worldTime(zone.modelData.name, zone.modelData.offsetMinutes)
 
-                StyledText {
                     Layout.alignment: Qt.AlignRight
-                    text: menu.brasilia.day === "today" ? "Brasília" : `Brasília, ${menu.brasilia.day}`
+                    spacing: 0
+
+                    StyledText {
+                        Layout.alignment: Qt.AlignRight
+                        text: zone.now.time
+                        font.bold: true
+                        font.pixelSize: 26
+                        color: ShellGlobals.materialColors.onprimarycontainer
+                    }
+
+                    StyledText {
+                        Layout.alignment: Qt.AlignRight
+                        text: zone.now.label
+                    }
                 }
             }
         }

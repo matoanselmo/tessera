@@ -3,6 +3,7 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import qs
+import qs.components
 import qs.services
 import "notification"
 
@@ -26,6 +27,10 @@ Variants {
 
         implicitHeight: ShellGlobals.barThickness + ShellGlobals.barGap * 2
         color: ShellGlobals.materialColors.background
+
+        // Every menu that drops from this bar. Listing one here is all it
+        // takes for outside clicks to dismiss it.
+        readonly property list<BarPopup> popups: [menu, volumeMenu, clockMenu]
 
         Menu {
             id: menu
@@ -53,13 +58,8 @@ Variants {
 
         DismissLayer {
             screen: bar.screen
-            active: volumeMenu.visible || clockMenu.visible || menu.visible
-
-            onDismissed: {
-                volumeMenu.close();
-                clockMenu.close();
-                Notifications.menuOpen = false;
-            }
+            active: bar.popups.some(p => p.visible)
+            onDismissed: bar.popups.forEach(p => p.close())
         }
 
         Item {

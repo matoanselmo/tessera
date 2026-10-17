@@ -20,6 +20,16 @@ Singleton {
     readonly property string searchEngineUrl: "https://www.google.com/search?q=%s"
     readonly property string searchEngineName: "Google"
 
+    // Extra clocks shown beside local time in the clock menu, left to right.
+    // Offsets are fixed minutes from UTC, so only zones without daylight
+    // saving stay exact: Brasília has been UTC-3 year-round since 2019.
+    readonly property var worldClocks: [
+        {
+            name: "Brasília",
+            offsetMinutes: -180
+        }
+    ]
+
     // Bar metrics
     readonly property int barThickness: 28
     readonly property int barGap: 4

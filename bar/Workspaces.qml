@@ -69,8 +69,12 @@ Rectangle {
                     return ShellGlobals.materialColors.tertiary;
                 }
 
+                // The focused pill widens with the faintest overshoot.
                 Behavior on implicitWidth {
-                    Anim {}
+                    Anim {
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
                 }
 
                 Behavior on color {

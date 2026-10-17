@@ -91,6 +91,46 @@ BarPopup {
 
             model: Notifications.notifications
 
+            // New entries ease in; dismissed ones slide out to the right and
+            // the rest close the gap.
+            add: Transition {
+                Anim {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    time: ShellGlobals.animSlow
+                }
+                Anim {
+                    property: "x"
+                    from: 8
+                    to: 0
+                    time: ShellGlobals.animSlow
+                }
+            }
+
+            remove: Transition {
+                Anim {
+                    property: "opacity"
+                    to: 0
+                    curve: ShellGlobals.easeIn
+                }
+                Anim {
+                    property: "x"
+                    to: 24
+                    curve: ShellGlobals.easeIn
+                }
+            }
+
+            displaced: Transition {
+                Anim {
+                    property: "y"
+                }
+                Anim {
+                    property: "opacity"
+                    to: 1
+                }
+            }
+
             delegate: NotificationEntry {
                 id: toast
                 required property Notification modelData
@@ -98,11 +138,6 @@ BarPopup {
                 width: listView.width
                 notif: modelData
 
-                Anim on opacity {
-                    from: 0
-                    to: 1
-                    time: ShellGlobals.animSlow
-                }
             }
         }
     }

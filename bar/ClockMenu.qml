@@ -45,14 +45,42 @@ BarPopup {
     }
 
     function resetMonth(): void {
+        const months = (clock.date.getFullYear() - menu.viewYear) * 12 + clock.date.getMonth() - menu.viewMonth;
         menu.viewYear = clock.date.getFullYear();
         menu.viewMonth = clock.date.getMonth();
+        menu.slideCalendar(Math.sign(months));
+    }
+
+    // Slides the new month in from the side it lies on, fading up.
+    function slideCalendar(direction: int): void {
+        if (direction === 0)
+            return;
+        monthChange.stop();
+        calendarShift.x = 16 * direction;
+        monthChange.start();
+    }
+
+    ParallelAnimation {
+        id: monthChange
+
+        Anim {
+            target: calendarShift
+            property: "x"
+            to: 0
+        }
+        Anim {
+            target: calendar
+            property: "opacity"
+            from: 0.2
+            to: 1
+        }
     }
 
     function shiftMonth(delta: int): void {
         const d = new Date(menu.viewYear, menu.viewMonth + delta, 1);
         menu.viewYear = d.getFullYear();
         menu.viewMonth = d.getMonth();
+        menu.slideCalendar(delta);
     }
 
     function pad(n: int): string {
@@ -193,6 +221,9 @@ BarPopup {
             id: calendar
             Layout.fillWidth: true
             columns: 7
+            transform: Translate {
+                id: calendarShift
+            }
             rowSpacing: 2
             columnSpacing: 2
 
@@ -314,6 +345,9 @@ BarPopup {
             Track {
                 Layout.fillWidth: true
                 value: Media.progress
+                // Positions are polled once a second while visible.
+                continuous: Media.playing
+                step: 1000
             }
 
             RowLayout {

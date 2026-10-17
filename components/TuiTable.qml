@@ -89,52 +89,87 @@ ColumnLayout {
         opacity: 0.5
     }
 
-    // Counted rather than handed the array: given a fresh array of the same
-    // length (a re-sort), Repeater kept its old items in their old order. By
-    // index, each row always shows whatever is now at its position.
-    Repeater {
-        model: table.rows.length
+    // Rows share one box so the cursor can be a single rectangle that slides
+    // from row to row, rather than each row lighting up in turn.
+    Item {
+        id: body
+
+        Layout.fillWidth: true
+        implicitHeight: table.rows.length * table.rowHeight
+        visible: table.rows.length > 0
 
         Rectangle {
-            id: row
-            required property int index
-
-            readonly property var values: table.rows[row.index] ?? []
-
-            readonly property bool current: row.index === table.currentIndex
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: table.rowHeight
+            id: cursor
+            width: body.width
+            height: table.rowHeight
+            y: table.currentIndex * table.rowHeight
             radius: ShellGlobals.radius
-            color: {
-                if (row.current && table.focused)
-                    return ShellGlobals.materialColors.secondary;
-                if (row.current || hover.containsMouse)
-                    return ShellGlobals.materialColors.tertiary;
-                return "transparent";
+            color: table.focused ? ShellGlobals.materialColors.secondary : ShellGlobals.materialColors.tertiary
+
+            Behavior on y {
+                Anim {}
             }
 
-            Cells {
-                anchors.fill: parent
-                anchors.leftMargin: 6
-                anchors.rightMargin: 6
-                values: row.values
-                color: row.current && table.focused ? ShellGlobals.materialColors.onsecondary : ShellGlobals.materialColors.ontertiarycontainer
+            Behavior on color {
+                CAnim {}
             }
+        }
 
-            MouseArea {
-                id: hover
-                cursorShape: Qt.PointingHandCursor
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: {
-                    table.currentIndex = row.index;
-                    table.selected(row.index);
+        // Counted rather than handed the array: given a fresh array of the
+        // same length (a re-sort), Repeater kept its old items in their old
+        // order. By index, each row always shows whatever is now at its
+        // position.
+        Repeater {
+            model: table.rows.length
+
+            Item {
+                id: row
+                required property int index
+
+                readonly property var values: table.rows[row.index] ?? []
+                readonly property bool current: row.index === table.currentIndex
+
+                y: row.index * table.rowHeight
+                width: body.width
+                height: table.rowHeight
+
+                // Hover tint, kept off the current row so the cursor shows through.
+                Rectangle {
+                    anchors.fill: parent
+                    radius: ShellGlobals.radius
+                    color: hover.containsMouse && !row.current ? Qt.alpha(ShellGlobals.materialColors.tertiary, 0.6) : "transparent"
+
+                    Behavior on color {
+                        CAnim {}
+                    }
                 }
-                onDoubleClicked: table.activated(row.index)
-                onWheel: event => {
-                    table.currentIndex = row.index;
-                    table.scrolled(row.index, event.angleDelta.y);
+
+                Cells {
+                    anchors.fill: parent
+                    anchors.leftMargin: 6
+                    anchors.rightMargin: 6
+                    values: row.values
+                    color: row.current && table.focused ? ShellGlobals.materialColors.onsecondary : ShellGlobals.materialColors.ontertiarycontainer
+
+                    Behavior on color {
+                        CAnim {}
+                    }
+                }
+
+                MouseArea {
+                    id: hover
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+                    onClicked: {
+                        table.currentIndex = row.index;
+                        table.selected(row.index);
+                    }
+                    onDoubleClicked: table.activated(row.index)
+                    onWheel: event => {
+                        table.currentIndex = row.index;
+                        table.scrolled(row.index, event.angleDelta.y);
+                    }
                 }
             }
         }

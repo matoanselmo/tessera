@@ -17,6 +17,34 @@ Item {
 
     readonly property real fraction: Math.max(0, Math.min(1, root.value))
 
+    // For values that advance steadily between updates (media position): set
+    // `continuous` and `step` to the update interval, and small forward steps
+    // glide linearly across it, so the bar moves continuously instead of
+    // ticking. Jumps (seeking, a new track) still ease quickly.
+    property bool continuous: false
+    property int step: 1000
+
+    // What is drawn: follows `fraction` with an animation.
+    property real displayed: 0
+
+    Component.onCompleted: root.displayed = root.fraction
+
+    onFractionChanged: {
+        const delta = root.fraction - root.displayed;
+        const steady = root.continuous && delta > 0 && delta < 0.05;
+        follow.stop();
+        follow.to = root.fraction;
+        follow.time = steady ? root.step : ShellGlobals.animFast;
+        follow.easing.type = steady ? Easing.Linear : Easing.BezierSpline;
+        follow.start();
+    }
+
+    Anim {
+        id: follow
+        target: root
+        property: "displayed"
+    }
+
     signal moved(real value)
 
     implicitHeight: root.interactive ? 24 : 12
@@ -29,7 +57,7 @@ Item {
         color: ShellGlobals.materialColors.surfacecontainerhighest
 
         Rectangle {
-            width: parent.width * root.fraction
+            width: parent.width * root.displayed
             height: parent.height
             radius: ShellGlobals.radius
             color: ShellGlobals.materialColors.secondary
@@ -38,7 +66,7 @@ Item {
 
     Rectangle {
         visible: root.interactive
-        x: (parent.width - width) * root.fraction
+        x: (parent.width - width) * root.displayed
         anchors.verticalCenter: parent.verticalCenter
         width: 10
         height: 22

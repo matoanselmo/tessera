@@ -12,7 +12,11 @@ import qs
 PopupWindow {
     id: popup
 
-    default property alias content: card.data
+    default property alias content: card.contentData
+
+    // How tall the content is. Set this rather than implicitHeight: the window
+    // follows the card as it morphs between heights.
+    property real contentHeight: 0
 
     // Fired once the popup has unmapped, however that came about.
     signal hidden
@@ -21,6 +25,8 @@ PopupWindow {
     color: "transparent"
     visible: false
     grabFocus: true
+
+    implicitHeight: Math.max(popup.contentHeight, card.animatedHeight)
 
     function open(): void {
         popup.visible = true;
@@ -54,7 +60,8 @@ PopupWindow {
 
     FadeCard {
         id: card
-        anchors.fill: parent
-        onFadedOut: popup.visible = false
+        width: parent.width
+        contentHeight: popup.contentHeight
+        onExited: popup.visible = false
     }
 }

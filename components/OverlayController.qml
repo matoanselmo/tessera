@@ -27,6 +27,20 @@ Scope {
 
     readonly property bool isOpen: persist.isOpen
 
+    // Keeps the window around after closing until the exit animation is done.
+    property bool alive: false
+
+    Component.onCompleted: root.alive = persist.isOpen
+
+    Connections {
+        target: persist
+
+        function onIsOpenChanged() {
+            if (persist.isOpen)
+                root.alive = true;
+        }
+    }
+
     function open(): void {
         persist.isOpen = true;
     }
@@ -64,7 +78,7 @@ Scope {
     }
 
     LazyLoader {
-        activeAsync: persist.isOpen
+        activeAsync: root.alive
 
         PanelWindow {
             color: "transparent"
@@ -72,7 +86,8 @@ Scope {
             implicitHeight: loader.height
             exclusionMode: root.exclusionMode
             WlrLayershell.layer: root.layer
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+            // Released as soon as it starts closing, not when it unmaps.
+            WlrLayershell.keyboardFocus: persist.isOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             WlrLayershell.namespace: root.namespace
 
             MouseArea {
@@ -86,12 +101,21 @@ Scope {
                     width: loader.width
                     height: loader.height
 
-                    // A Loader is a focus scope: without `focus` here the
-                    // content's own focused field never gets the keyboard.
-                    Loader {
-                        id: loader
+                    Reveal {
+                        width: loader.width
+                        height: loader.height
                         focus: true
-                        sourceComponent: root.content
+                        shown: persist.isOpen
+                        fromScale: 0.96
+                        onExited: root.alive = false
+
+                        // A Loader is a focus scope: without `focus` here the
+                        // content's own focused field never gets the keyboard.
+                        Loader {
+                            id: loader
+                            focus: true
+                            sourceComponent: root.content
+                        }
                     }
 
                     Connections {

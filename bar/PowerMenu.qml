@@ -19,7 +19,7 @@ BarPopup {
     anchor.margins.top: ShellGlobals.barGap
 
     implicitWidth: menu.anchorItem.width
-    implicitHeight: column.implicitHeight
+    contentHeight: column.implicitHeight
 
     // Open state lives in LogoutState so the "logout" IPC target is registered
     // once; hiding the popup by any route writes back to it.

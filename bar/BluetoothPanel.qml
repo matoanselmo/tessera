@@ -14,7 +14,7 @@ BarPanel {
     id: panel
 
     implicitWidth: 540
-    implicitHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
+    contentHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
 
     readonly property var adapter: BluetoothState.adapter
 

@@ -15,7 +15,7 @@ BarPanel {
     id: panel
 
     implicitWidth: 560
-    implicitHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
+    contentHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
 
     property string pane: "devices"
     readonly property var panes: ["devices", "apps"]

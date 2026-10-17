@@ -18,10 +18,17 @@ Scope {
     property int delay: 500
 
     property bool shown: false
+    // Keeps the popup around while it fades out.
+    property bool alive: false
 
     onHoveredChanged: {
         if (!root.hovered)
             root.shown = false;
+    }
+
+    onShownChanged: {
+        if (root.shown)
+            root.alive = true;
     }
 
     Timer {
@@ -31,7 +38,7 @@ Scope {
     }
 
     LazyLoader {
-        active: root.shown
+        active: root.alive
 
         PopupWindow {
             anchor.item: root.target
@@ -45,17 +52,27 @@ Scope {
             color: "transparent"
             visible: true
 
-            Rectangle {
+            // Drifts a few pixels out from the target as it fades in.
+            Reveal {
                 anchors.fill: parent
-                color: ShellGlobals.materialColors.surfacecontainerhighest
-                radius: ShellGlobals.radius
+                shown: root.shown
+                time: 120
+                fromX: root.edge === Edges.Left ? 4 : 0
+                fromY: root.edge === Edges.Bottom ? -4 : 0
+                onExited: root.alive = false
 
-                StyledText {
-                    id: label
-                    anchors.centerIn: parent
-                    text: root.text
-                    font.bold: true
-                    color: ShellGlobals.materialColors.onprimarycontainer
+                Rectangle {
+                    anchors.fill: parent
+                    color: ShellGlobals.materialColors.surfacecontainerhighest
+                    radius: ShellGlobals.radius
+
+                    StyledText {
+                        id: label
+                        anchors.centerIn: parent
+                        text: root.text
+                        font.bold: true
+                        color: ShellGlobals.materialColors.onprimarycontainer
+                    }
                 }
             }
         }

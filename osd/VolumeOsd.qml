@@ -42,10 +42,16 @@ Scope {
         active: root.alive
 
         PanelWindow {
+            id: osdWindow
             screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput) ?? Quickshell.screens[0]
 
+            // The window is `rise` taller than the card so the card can rise
+            // into place inside it; the margin is lowered to match, so the card
+            // settles where it always did.
+            readonly property int rise: 12
+
             anchors.bottom: true
-            margins.bottom: 96
+            margins.bottom: 96 - rise
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.namespace: "shell:osd"
@@ -54,51 +60,46 @@ Scope {
             mask: Region {}
 
             implicitWidth: 280
-            implicitHeight: ShellGlobals.barThickness + ShellGlobals.barGap * 4
+            implicitHeight: ShellGlobals.barThickness + ShellGlobals.barGap * 4 + rise
             color: "transparent"
 
-            Rectangle {
-                id: card
-                anchors.fill: parent
-                color: ShellGlobals.materialColors.tertiarycontainer
-                radius: ShellGlobals.radius
+            Reveal {
+                width: parent.width
+                height: parent.height - osdWindow.rise
+                shown: root.shown
+                fromY: osdWindow.rise
+                onExited: root.alive = false
 
-                // Starts hidden and binds once created, so it fades in too.
-                opacity: 0
-                Component.onCompleted: card.opacity = Qt.binding(() => root.shown ? 1 : 0)
-
-                Behavior on opacity {
-                    Anim {}
-                }
-
-                onOpacityChanged: {
-                    if (card.opacity === 0 && !root.shown)
-                        root.alive = false;
-                }
-
-                RowLayout {
+                Rectangle {
+                    id: card
                     anchors.fill: parent
-                    anchors.leftMargin: ShellGlobals.popupPadding
-                    anchors.rightMargin: ShellGlobals.popupPadding
-                    spacing: 10
+                    color: ShellGlobals.materialColors.tertiarycontainer
+                    radius: ShellGlobals.radius
 
-                    TintedIcon {
-                        source: Qt.resolvedUrl(`../bar/icons/${Audio.icon}`)
-                        color: Audio.muted ? ShellGlobals.materialColors.error : ShellGlobals.materialColors.ontertiarycontainer
-                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: ShellGlobals.popupPadding
+                        anchors.rightMargin: ShellGlobals.popupPadding
+                        spacing: 10
 
-                    Track {
-                        Layout.fillWidth: true
-                        thickness: 6
-                        value: Audio.muted ? 0 : Audio.volume
-                    }
+                        TintedIcon {
+                            source: Qt.resolvedUrl(`../bar/icons/${Audio.icon}`)
+                            color: Audio.muted ? ShellGlobals.materialColors.error : ShellGlobals.materialColors.ontertiarycontainer
+                        }
 
-                    StyledText {
-                        Layout.preferredWidth: 38
-                        horizontalAlignment: Text.AlignRight
-                        text: Audio.muted ? "off" : `${Audio.percent}%`
-                        font.bold: true
-                        font.pixelSize: ShellGlobals.fontSize + 1
+                        Track {
+                            Layout.fillWidth: true
+                            thickness: 6
+                            value: Audio.muted ? 0 : Audio.volume
+                        }
+
+                        StyledText {
+                            Layout.preferredWidth: 38
+                            horizontalAlignment: Text.AlignRight
+                            text: Audio.muted ? "off" : `${Audio.percent}%`
+                            font.bold: true
+                            font.pixelSize: ShellGlobals.fontSize + 1
+                        }
                     }
                 }
             }

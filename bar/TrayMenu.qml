@@ -26,7 +26,7 @@ BarPopup {
     anchor.margins.top: ShellGlobals.barGap
 
     implicitWidth: Math.max(180, Math.min(320, column.implicitWidth + ShellGlobals.barGap * 2))
-    implicitHeight: column.implicitHeight + ShellGlobals.barGap * 2
+    contentHeight: column.implicitHeight + ShellGlobals.barGap * 2
 
     // Opens `handle` (a SystemTrayItem's menu) under `item`.
     function show(item: Item, handle: var): void {

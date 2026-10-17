@@ -17,7 +17,11 @@ PanelWindow {
     required property Item anchorItem
 
     // Laid out inside a focus scope that holds the keyboard while open.
-    default property alias content: card.data
+    default property alias content: card.contentData
+
+    // How tall the content is. Set this rather than implicitHeight: the window
+    // follows the card as it morphs between heights.
+    property real contentHeight: 0
 
     signal opened
     signal hidden
@@ -40,6 +44,8 @@ PanelWindow {
 
     color: "transparent"
     visible: false
+
+    implicitHeight: Math.max(panel.contentHeight, card.animatedHeight)
 
     function open(): void {
         const edge = panel.anchorItem.mapToItem(null, panel.anchorItem.width, 0).x;
@@ -72,10 +78,11 @@ PanelWindow {
 
     FadeCard {
         id: card
-        anchors.fill: parent
+        width: parent.width
+        contentHeight: panel.contentHeight
         focus: true
 
         Keys.onEscapePressed: panel.close()
-        onFadedOut: panel.visible = false
+        onExited: panel.visible = false
     }
 }

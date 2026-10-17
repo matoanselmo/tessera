@@ -16,7 +16,7 @@ BarPopup {
     anchor.rect.y: bar.height
 
     implicitWidth: 360
-    implicitHeight: Math.min(header.implicitHeight + 13 + panel.listHeight, bar.screen.height * 0.8)
+    contentHeight: Math.min(header.implicitHeight + 13 + panel.listHeight, bar.screen.height * 0.8)
 
     readonly property int listHeight: listView.count === 0 ? 56 : listView.contentHeight + 16
 

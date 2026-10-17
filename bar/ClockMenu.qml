@@ -27,7 +27,7 @@ BarPopup {
     // Grows past the default when several world clocks need the room. Only the
     // clock row counts, so a long track title still elides instead.
     implicitWidth: Math.max(300, clocks.implicitWidth + ShellGlobals.popupPadding * 2)
-    implicitHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
+    contentHeight: column.implicitHeight + ShellGlobals.popupPadding * 2
 
     SystemClock {
         id: clock

@@ -24,14 +24,33 @@ Singleton {
         return root.workspaces.find(ws => ws.id === id) ?? null;
     }
 
-    // niri addresses workspaces by index within the focused output, so focus
-    // the workspace's output first.
+    // Sends a niri action over the IPC socket, e.g. `{ ToggleOverview: {} }`.
+    function action(request: var): void {
+        if (!ipc.connected)
+            ipc.connected = true;
+        ipc.write(JSON.stringify({
+            Action: request
+        }) + "\n");
+        ipc.flush();
+    }
+
+    // By id, which works on any output without focusing it first. The CLI
+    // only takes an index on the focused output, and the focus-monitor it
+    // needed warped the pointer to the middle of the screen on every click.
     function focusWorkspace(ws: var): void {
-        Quickshell.execDetached(["sh", "-c", 'niri msg action focus-monitor "$1" && niri msg action focus-workspace "$2"', "sh", ws.output, String(ws.idx)]);
+        root.action({
+            FocusWorkspace: {
+                reference: {
+                    Id: ws.id
+                }
+            }
+        });
     }
 
     function toggleOverview(): void {
-        Quickshell.execDetached(["niri", "msg", "action", "toggle-overview"]);
+        root.action({
+            ToggleOverview: {}
+        });
     }
 
     function handle(line: string): void {
@@ -96,5 +115,26 @@ Singleton {
         id: reconnect
         interval: 1000
         onTriggered: stream.running = true
+    }
+
+    // One long-lived connection for actions; niri answers each request line
+    // with a reply line, which is read and dropped.
+    Socket {
+        id: ipc
+        path: Quickshell.env("NIRI_SOCKET")
+        connected: true
+
+        parser: SplitParser {}
+
+        onConnectedChanged: {
+            if (!ipc.connected)
+                reconnectIpc.start();
+        }
+    }
+
+    Timer {
+        id: reconnectIpc
+        interval: 1000
+        onTriggered: ipc.connected = true
     }
 }

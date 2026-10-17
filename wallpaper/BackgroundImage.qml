@@ -1,23 +1,71 @@
 import QtQuick
+import qs
+import qs.components
+import qs.services
 
+// The current wallpaper (Wallpapers.source), cropped to fill its area at any
+// resolution. Switching crossfades: the new image loads underneath, fades in
+// over the old one once it is ready, then takes its place, so there is never
+// a blank frame.
 Item {
     id: root
 
-    property alias source: image.source
-    property alias asynchronous: image.asynchronous
+    readonly property url source: Wallpapers.source
 
     clip: true
 
-    // PreserveAspectCrop fills the output at any resolution. The old version
-    // hardcoded a width of 1920 with no height binding, so it only ever lined up
-    // on a 1920-wide screen showing a 16:9 image.
-    Image {
-        id: image
+    component Layer: Image {
         anchors.fill: parent
-        source: Qt.resolvedUrl("Wallpaper.png")
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         smooth: true
         mipmap: true
+        // Decoded at the size it is shown, not the file's: wallpapers are
+        // often 5K or more.
+        sourceSize.width: root.width
+        sourceSize.height: root.height
+    }
+
+    Layer {
+        id: base
+
+        // Once the incoming image has become the base, drop the duplicate.
+        onStatusChanged: {
+            if (base.status === Image.Ready && base.source === incoming.source) {
+                incoming.opacity = 0;
+                incoming.source = "";
+            }
+        }
+    }
+
+    Layer {
+        id: incoming
+        opacity: 0
+
+        onStatusChanged: {
+            if (incoming.status === Image.Ready && incoming.source !== "")
+                fadeIn.restart();
+        }
+    }
+
+    Anim {
+        id: fadeIn
+        target: incoming
+        property: "opacity"
+        from: 0
+        to: 1
+        time: ShellGlobals.animSlow
+        onFinished: base.source = incoming.source
+    }
+
+    // The first image appears directly; only changes crossfade.
+    Component.onCompleted: base.source = root.source
+
+    onSourceChanged: {
+        if (root.source === base.source)
+            return;
+        fadeIn.stop();
+        incoming.opacity = 0;
+        incoming.source = root.source;
     }
 }

@@ -5,6 +5,8 @@ import Quickshell.Widgets
 import qs
 import qs.components
 import qs.services
+import qs.lock
+import qs.terminal
 import "Calculator.js" as Calculator
 import "WebSearch.js" as WebSearch
 import "Fuzzy.js" as Fuzzy
@@ -26,7 +28,8 @@ Item {
     readonly property string mode: ({
             ";": "clip",
             ":": "emoji",
-            "/": "files"
+            "/": "files",
+            "@": "command"
         })[search.text[0]] ?? ""
     readonly property string modeQuery: search.text.slice(1).trim().toLowerCase()
 
@@ -53,6 +56,78 @@ Item {
                     hint: "Copy",
                     emoji: e[0]
                 }));
+    }
+
+    // Commands behind `@`. Typing `@` lists them; `@name` picks one. A command
+    // with `list` shows its own rows, filtered by whatever follows its name
+    // (`@bg forest`); one with `run` runs on Enter.
+    readonly property var commands: [
+        {
+            name: "bg",
+            description: "Change the wallpaper",
+            list: q => root.wallpaperRows(q)
+        },
+        {
+            name: "lock",
+            description: "Lock the screen",
+            run: () => LockState.lock()
+        },
+        {
+            name: "dnd",
+            description: "Toggle do not disturb",
+            run: () => Notifications.setDnd(!Notifications.dnd)
+        },
+        {
+            name: "terminal",
+            description: "Open the popup terminal",
+            run: () => PopupTerminal.open()
+        }
+    ]
+
+    // "@bg forest" → { name: "bg", rest: "forest" }.
+    readonly property var commandInput: {
+        const m = /^@(\S*)\s*(.*)$/.exec(search.text) ?? [];
+        return {
+            name: (m[1] ?? "").toLowerCase(),
+            rest: (m[2] ?? "").trim().toLowerCase()
+        };
+    }
+
+    function commandRows(): var {
+        const input = root.commandInput;
+        const exact = root.commands.find(c => c.name === input.name);
+        if (exact?.list)
+            return exact.list(input.rest);
+
+        return root.commands.filter(c => c.name.startsWith(input.name)).map(c => ({
+                    kind: "command",
+                    name: `@${c.name}`,
+                    glyph: "@",
+                    hint: c.description,
+                    command: c
+                }));
+    }
+
+    // Every wallpaper in the folder, current one marked, plus a way to add more.
+    function wallpaperRows(q: string): var {
+        const rows = Wallpapers.images.filter(p => Wallpapers.nameOf(p).toLowerCase().includes(q)).map(p => ({
+                    kind: "wallpaper",
+                    name: Wallpapers.nameOf(p),
+                    thumb: `file://${p}`,
+                    hint: p === Wallpapers.path ? "Current" : "Set",
+                    path: p
+                }));
+        if (q === "")
+            rows.push({
+                kind: "command",
+                name: "Open the backgrounds folder",
+                glyph: "\u2197",
+                hint: ShellGlobals.wallpaperDir,
+                command: {
+                    run: () => Wallpapers.openFolder()
+                }
+            });
+        return rows;
     }
 
     // Files ranked by how well their name (not their folder) matches.
@@ -109,6 +184,18 @@ Item {
         case "file":
             Files.open(entry.path);
             break;
+        case "command":
+            // A command with its own list completes to it instead of running.
+            if (entry.command.list) {
+                search.text = `${entry.name} `;
+                return;
+            }
+            entry.command.run();
+            break;
+        case "wallpaper":
+            // Stays open, so you can try a few and watch them crossfade.
+            Wallpapers.set(entry.path);
+            return;
         }
 
         root.closeRequested();
@@ -206,7 +293,7 @@ Item {
                             anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
                             visible: search.text === ""
-                            text: "Apps  ·  = maths  ·  ; clipboard  ·  : emoji  ·  / files"
+                            text: "Apps  ·  = maths  ·  ; clipboard  ·  : emoji  ·  / files  ·  @ commands"
                             font: search.font
                             color: ShellGlobals.materialColors.onsecondarycontainer
                             opacity: 0.4
@@ -238,6 +325,8 @@ Item {
                             return root.emojiRows(root.modeQuery);
                         if (root.mode === "files")
                             return root.fileRows(root.modeQuery);
+                        if (root.mode === "command")
+                            return root.commandRows();
                         if (root.mode === "clip") {
                             const q = root.modeQuery;
                             return Clipboard.entries.filter(e => q === "" || e.text.toLowerCase().includes(q)).slice(0, 200).map(e => ({
@@ -275,7 +364,13 @@ Item {
                             : calcRows.concat(appRows, webRows);
                     }
 
-                    onValuesChanged: list.currentIndex = 0
+                    // Typing already resets the selection. In command mode rows also
+                    // change under you (the current wallpaper's marker moves), and
+                    // the selection should stay where you left it.
+                    onValuesChanged: {
+                        if (root.mode !== "command")
+                            list.currentIndex = 0;
+                    }
                 }
 
                 topMargin: 7
@@ -370,8 +465,19 @@ Item {
                         // placeholder texture that renders as a broken tile.
                         Item {
                             Layout.alignment: Qt.AlignVCenter
-                            Layout.preferredWidth: 32
+                            // Wallpaper rows show a wider 16:9 thumbnail.
+                            Layout.preferredWidth: modelData.thumb ? 56 : 32
                             Layout.preferredHeight: 32
+
+                            Image {
+                                anchors.fill: parent
+                                visible: !!modelData.thumb
+                                source: modelData.thumb ?? ""
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                sourceSize.width: 112
+                                sourceSize.height: 64
+                            }
 
                             IconImage {
                                 id: entryIcon

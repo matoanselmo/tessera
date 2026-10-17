@@ -38,6 +38,11 @@ Singleton {
     readonly property string lockPamConfig: "swaylock"
     readonly property string lockPamDir: "/usr/lib/pam.d"
 
+    // Folders the launcher's file search (`/`) leaves out, besides hidden
+    // ones and node_modules. ~/config is what ~/.config points to here, so it
+    // is hidden in all but name, and full of app data.
+    readonly property var fileSearchSkip: ["~/config"]
+
     // Bar metrics
     readonly property int barThickness: 28
     readonly property int barGap: 4

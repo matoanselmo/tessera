@@ -8,6 +8,7 @@ import qs.services
 import "Calculator.js" as Calculator
 import "WebSearch.js" as WebSearch
 import "Fuzzy.js" as Fuzzy
+import "Emoji.js" as Emoji
 
 Item {
     id: root
@@ -19,19 +20,52 @@ Item {
 
     readonly property string query: search.text.trim()
 
-    // A leading `;` switches to clipboard history; the rest filters it.
-    readonly property bool clipMode: search.text.startsWith(";")
-    readonly property string clipQuery: search.text.slice(1).trim().toLowerCase()
+    // A leading character switches mode: `;` clipboard history, `:` emoji,
+    // `/` files. The rest of the text searches within it. "" is the normal
+    // app search (with maths and web rows).
+    readonly property string mode: ({
+            ";": "clip",
+            ":": "emoji",
+            "/": "files"
+        })[search.text[0]] ?? ""
+    readonly property string modeQuery: search.text.slice(1).trim().toLowerCase()
 
-    onClipModeChanged: {
-        if (root.clipMode)
+    onModeChanged: {
+        if (root.mode === "clip")
             Clipboard.refresh();
+        else if (root.mode === "files")
+            Files.refresh();
     }
 
     // Non-application rows. Both return null when the query isn't theirs, so
     // they cost one regex test per keystroke on an ordinary app search.
-    readonly property var calcResult: root.clipMode ? null : Calculator.evaluate(root.query)
-    readonly property var webAction: root.clipMode ? null : WebSearch.actionFor(root.query, ShellGlobals.searchEngineUrl, ShellGlobals.searchEngineName)
+    readonly property var calcResult: root.mode !== "" ? null : Calculator.evaluate(root.query)
+    readonly property var webAction: root.mode !== "" ? null : WebSearch.actionFor(root.query, ShellGlobals.searchEngineUrl, ShellGlobals.searchEngineName)
+
+    // Emoji whose name has every word typed, exact and prefix matches first.
+    function emojiRows(q: string): var {
+        const words = q.split(/\s+/).filter(w => w !== "");
+        const rank = e => e[1] === q ? 0 : e[1].startsWith(q) ? 1 : 2;
+        return Emoji.list.filter(e => words.every(w => e[1].includes(w))).sort((a, b) => (rank(a) - rank(b)) || (a[1].length - b[1].length)).slice(0, 60).map(e => ({
+                    kind: "emoji",
+                    name: e[1][0].toUpperCase() + e[1].slice(1),
+                    glyph: e[0],
+                    hint: "Copy",
+                    emoji: e[0]
+                }));
+    }
+
+    // Files ranked by how well their name (not their folder) matches.
+    function fileRows(q: string): var {
+        const name = p => p.slice(p.lastIndexOf("/") + 1);
+        return Fuzzy.rank(q, Files.paths, name).slice(0, 50).map(p => ({
+                    kind: "file",
+                    name: name(p),
+                    glyph: "\u25a4",
+                    hint: Files.folderOf(p),
+                    path: p
+                }));
+    }
 
     // Opened through the clipboard IPC target: start in clipboard mode.
     Component.onCompleted: {
@@ -68,6 +102,12 @@ Item {
             break;
         case "clip":
             Clipboard.copy(entry.entry);
+            break;
+        case "emoji":
+            Quickshell.execDetached(["wl-copy", "--", entry.emoji]);
+            break;
+        case "file":
+            Files.open(entry.path);
             break;
         }
 
@@ -121,8 +161,19 @@ Item {
                         Keys.onEscapePressed: root.closeRequested()
 
                         Keys.onPressed: event => {
+                            // Shift+Enter on a file opens the folder it is in.
+                            if (root.mode === "files" && (event.key == Qt.Key_Return || event.key == Qt.Key_Enter) && (event.modifiers & Qt.ShiftModifier)) {
+                                const row = list.currentItem?.modelData;
+                                if (row?.kind === "file") {
+                                    Files.reveal(row.path);
+                                    root.closeRequested();
+                                }
+                                event.accepted = true;
+                                return;
+                            }
+
                             // Shift+Delete forgets the selected clipboard entry.
-                            if (root.clipMode && event.key == Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
+                            if (root.mode === "clip" && event.key == Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
                                 const row = list.currentItem?.modelData;
                                 if (row?.kind === "clip")
                                     Clipboard.remove(row.entry);
@@ -155,7 +206,7 @@ Item {
                             anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
                             visible: search.text === ""
-                            text: "Search apps  ·  = maths  ·  ; clipboard"
+                            text: "Apps  ·  = maths  ·  ; clipboard  ·  : emoji  ·  / files"
                             font: search.font
                             color: ShellGlobals.materialColors.onsecondarycontainer
                             opacity: 0.4
@@ -182,9 +233,13 @@ Item {
                     }))
 
                     values: {
-                        // Clipboard mode shows nothing else.
-                        if (root.clipMode) {
-                            const q = root.clipQuery;
+                        // The prefixed modes show nothing else.
+                        if (root.mode === "emoji")
+                            return root.emojiRows(root.modeQuery);
+                        if (root.mode === "files")
+                            return root.fileRows(root.modeQuery);
+                        if (root.mode === "clip") {
+                            const q = root.modeQuery;
                             return Clipboard.entries.filter(e => q === "" || e.text.toLowerCase().includes(q)).slice(0, 200).map(e => ({
                                 kind: "clip",
                                 name: e.text,

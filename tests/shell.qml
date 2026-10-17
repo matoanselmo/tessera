@@ -5,6 +5,7 @@ import QtQuick
 import "launcher/Calculator.js" as Calculator
 import "launcher/Fuzzy.js" as Fuzzy
 import "launcher/WebSearch.js" as WebSearch
+import "launcher/Emoji.js" as Emoji
 import "keybinds/parse.js" as Parse
 import "services/Nmcli.js" as Nmcli
 
@@ -62,6 +63,15 @@ Scope {
         root.eq("web: empty query", act("   "), null);
     }
 
+    function emoji(): void {
+        const named = n => Emoji.list.find(e => e[1] === n)?.[0];
+        root.eq("emoji: table loads", Emoji.list.length > 1000, true);
+        root.eq("emoji: names are lower case", Emoji.list.every(e => e[1] === e[1].toLowerCase()), true);
+        root.eq("emoji: pictograph", named("fire"), "\u{1F525}");
+        root.eq("emoji: classic symbol kept", named("hot beverage"), "\u2615");
+        root.eq("emoji: skin tones skipped", Emoji.list.some(e => e[1].startsWith("emoji modifier")), false);
+    }
+
     function keybinds(): void {
         const src = `
             input { keyboard { numlock; } }
@@ -96,7 +106,7 @@ Scope {
     }
 
     Component.onCompleted: {
-        for (const suite of [root.calculator, root.fuzzy, root.webSearch, root.keybinds, root.nmcli]) {
+        for (const suite of [root.calculator, root.fuzzy, root.webSearch, root.emoji, root.keybinds, root.nmcli]) {
             try {
                 suite();
             } catch (e) {

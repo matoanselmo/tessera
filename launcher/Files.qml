@@ -6,8 +6,9 @@ import Quickshell.Io
 import qs
 
 // Files under your home folder for the launcher's `/` search, listed afresh
-// each time file search opens; filtering then happens as you type. Hidden
-// folders, node_modules and ShellGlobals.fileSearchSkip are left out.
+// each time file search opens; filtering then happens as you type. Listed
+// with ripgrep, which leaves out hidden and git-ignored files; node_modules
+// and ShellGlobals.fileSearchSkip are skipped too.
 Singleton {
     id: root
 
@@ -35,18 +36,20 @@ Singleton {
 
     Process {
         id: lister
-        // find, not rg: it is always installed. Each skipped folder is pruned
-        // so find never descends into it.
+        // Run from the home folder: ripgrep anchors a glob's leading "/" to
+        // the working directory, so "!/config/" skips ~/config and nothing
+        // else. Its output is relative to here as a result.
+        workingDirectory: root.home
         command: {
-            const args = ["find", root.home];
+            const args = ["rg", "--files", "--glob", "!node_modules/"];
             // A loop, not flatMap: a list read from a QML property lacks it.
             for (const path of ShellGlobals.fileSearchSkip)
-                args.push("-path", path.replace(/^~/, root.home), "-prune", "-o");
-            return args.concat(["-name", ".*", "-prune", "-o", "-name", "node_modules", "-prune", "-o", "-type", "f", "-print"]);
+                args.push("--glob", `!${path.replace(/^~/, "")}/`);
+            return args;
         }
 
         stdout: StdioCollector {
-            onStreamFinished: root.paths = text.split("\n").filter(p => p !== "")
+            onStreamFinished: root.paths = text.split("\n").filter(p => p !== "").map(p => `${root.home}/${p}`)
         }
     }
 }

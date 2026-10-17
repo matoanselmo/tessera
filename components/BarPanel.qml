@@ -39,7 +39,7 @@ PanelWindow {
 
     exclusionMode: ExclusionMode.Normal
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "shell:panel"
+    WlrLayershell.namespace: "tessera:panel"
     WlrLayershell.keyboardFocus: panel.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     color: "transparent"

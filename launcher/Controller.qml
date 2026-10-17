@@ -39,7 +39,7 @@ Singleton {
     OverlayController {
         id: overlay
         ipcTarget: "launcher"
-        namespace: "shell:launcher"
+        namespace: "tessera:launcher"
         content: Component {
             LaunchContent {}
         }

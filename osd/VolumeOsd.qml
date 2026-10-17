@@ -65,7 +65,7 @@ Scope {
             margins.bottom: 96 - rise
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.namespace: "shell:osd"
+            WlrLayershell.namespace: "tessera:osd"
 
             // An empty input region, so the OSD never eats a click.
             mask: Region {}

@@ -36,7 +36,7 @@ Scope {
 
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.layer: WlrLayer.Top
-            WlrLayershell.namespace: "shell:dismiss"
+            WlrLayershell.namespace: "tessera:dismiss"
             color: "transparent"
 
             MouseArea {

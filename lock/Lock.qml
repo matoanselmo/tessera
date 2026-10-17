@@ -36,7 +36,7 @@ Scope {
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-            WlrLayershell.namespace: "shell:lockpreview"
+            WlrLayershell.namespace: "tessera:lockpreview"
             color: ShellGlobals.materialColors.background
 
             LockSurface {

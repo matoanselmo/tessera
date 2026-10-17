@@ -29,7 +29,7 @@ Singleton {
 
     OverlayController {
         ipcTarget: "keybinds"
-        namespace: "shell:keybinds"
+        namespace: "tessera:keybinds"
         layer: WlrLayer.Overlay
         exclusionMode: ExclusionMode.Ignore
         content: Component {

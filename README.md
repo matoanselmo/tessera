@@ -1,8 +1,17 @@
-# quickshell
+# Tessera
 
-A [Quickshell](https://quickshell.org) desktop shell for the niri compositor.
-It provides a top bar, an app launcher, a keybinds overlay, a power menu,
-notifications and the wallpaper.
+A desktop shell for the [niri](https://github.com/YaLTeR/niri) compositor,
+built on [Quickshell](https://quickshell.org): square tiles, One Dark colours,
+terminal-styled panels and quiet, smooth motion.
+
+It provides a top bar, an app launcher (with maths, web search, clipboard
+history, emoji and file search), network, Bluetooth and volume panels,
+notifications, a lock screen, a popup terminal, a keybinds overlay, a power
+menu, OSDs and the wallpaper.
+
+It lives in `~/.config/quickshell`, the folder Quickshell loads by default, and
+its layer-shell windows are named `tessera:*` (e.g. `tessera:bar`) for niri
+layer rules.
 
 Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warnings.
 

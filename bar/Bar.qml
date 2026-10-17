@@ -18,7 +18,7 @@ Variants {
         required property var modelData
         screen: modelData
 
-        WlrLayershell.namespace: "shell:bar"
+        WlrLayershell.namespace: "tessera:bar"
 
         anchors {
             top: true

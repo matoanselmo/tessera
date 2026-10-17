@@ -14,7 +14,7 @@ Variants {
 
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Background
-        WlrLayershell.namespace: "shell:background"
+        WlrLayershell.namespace: "tessera:background"
 
         anchors {
             top: true

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs
+import qs.components
 
 import "parse.js" as Parse
 
@@ -48,24 +49,18 @@ Item {
                 id: header
                 Layout.fillWidth: true
 
-                Text {
+                StyledText {
                     text: "Keybinds"
                     font.bold: true
                     font.pixelSize: 15
-                    font.family: ShellGlobals.fontFamily
-                    font.letterSpacing: ShellGlobals.letterSpacing
-                    color: ShellGlobals.materialColors.ontertiarycontainer
                 }
 
                 Item {
                     Layout.fillWidth: true
                 }
 
-                Text {
+                StyledText {
                     text: `${root.binds.length} binds`
-                    font.pixelSize: 12
-                    font.family: ShellGlobals.fontFamily
-                    color: ShellGlobals.materialColors.ontertiarycontainer
                     opacity: 0.6
                 }
             }
@@ -135,14 +130,12 @@ Item {
                     values: Parse.filterRows(root.binds, search.text)
                 }
 
-                Text {
+                StyledText {
                     anchors.centerIn: parent
                     visible: list.count === 0
                     text: root.binds.length === 0 ? "No binds found in the niri config" : "No matching binds"
-                    color: ShellGlobals.materialColors.ontertiarycontainer
                     opacity: 0.6
                     font.pixelSize: 13
-                    font.family: ShellGlobals.fontFamily
                 }
 
                 delegate: Item {
@@ -152,7 +145,7 @@ Item {
                     width: ListView.view.width
                     height: row.modelData.header ? 30 : list.rowHeight
 
-                    Text {
+                    StyledText {
                         visible: row.modelData.header
                         anchors.left: parent.left
                         anchors.leftMargin: 12
@@ -160,10 +153,7 @@ Item {
                         anchors.bottomMargin: 6
                         text: row.modelData.text
                         color: ShellGlobals.materialColors.secondary
-                        font.pixelSize: 12
                         font.bold: true
-                        font.family: ShellGlobals.fontFamily
-                        font.letterSpacing: ShellGlobals.letterSpacing
                     }
 
                     Rectangle {
@@ -182,16 +172,13 @@ Item {
                             anchors.rightMargin: 8
                             spacing: 12
 
-                            Text {
+                            StyledText {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 text: row.modelData.text
                                 elide: Text.ElideRight
-                                color: ShellGlobals.materialColors.ontertiarycontainer
                                 font.pixelSize: 14
                                 font.bold: true
-                                font.family: ShellGlobals.fontFamily
-                                font.letterSpacing: ShellGlobals.letterSpacing
                             }
 
                             Row {
@@ -210,14 +197,12 @@ Item {
                                         color: ShellGlobals.materialColors.secondarycontainer
                                         radius: ShellGlobals.radius
 
-                                        Text {
+                                        StyledText {
                                             id: chipLabel
                                             anchors.centerIn: parent
                                             text: chip.modelData
                                             color: ShellGlobals.materialColors.onsecondarycontainer
-                                            font.pixelSize: 12
                                             font.bold: true
-                                            font.family: ShellGlobals.fontFamily
                                         }
                                     }
                                 }

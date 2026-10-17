@@ -2,15 +2,12 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Notifications
-import Qt5Compat.GraphicalEffects
 import qs
+import qs.components
 
-PopupWindow {
+BarPopup {
     id: panel
     required property PanelWindow bar
-
-    color: "transparent"
-    visible: false
 
     // Hangs below the top bar, flush with its right edge.
     anchor.window: bar
@@ -22,69 +19,17 @@ PopupWindow {
 
     readonly property int listHeight: listView.count === 0 ? 56 : listView.contentHeight + 16
 
-    // Driven from the singleton so the "notifications" IPC target is registered
-    // once, not once per screen.
+    // Open state lives in the singleton so the "notifications" IPC target is
+    // registered once, not once per screen. Every path that hides the popup
+    // writes back to it, which keeps the IPC toggle in step.
     readonly property bool shouldShow: NotifServer.menuOpen
 
-    // Left on for compositors that honour a layer-shell popup grab; niri does
-    // not, so outside clicks are actually caught by the bar's DismissLayer.
-    // Going through the singleton keeps the IPC toggle in step.
-    grabFocus: true
-
-    onVisibleChanged: {
-        if (!panel.visible)
-            NotifServer.menuOpen = false;
-    }
-
-    onShouldShowChanged: {
-        if (panel.shouldShow) {
-            panel.visible = true;
-            cardbox.state = "Open";
-        } else {
-            cardbox.state = "Closed";
-        }
-    }
-
-    Rectangle {
-        id: background
-        anchors.fill: parent
-        color: ShellGlobals.materialColors.tertiarycontainer
-        opacity: cardbox.opacity
-        radius: ShellGlobals.radius
-    }
+    onShouldShowChanged: panel.shouldShow ? panel.open() : panel.close()
+    onHidden: NotifServer.menuOpen = false
 
     ColumnLayout {
-        id: cardbox
         anchors.fill: parent
         spacing: 0
-
-        state: "Closed"
-        states: [
-            State {
-                name: "Open"
-                PropertyChanges {
-                    cardbox.opacity: 1
-                }
-            },
-            State {
-                name: "Closed"
-                PropertyChanges {
-                    cardbox.opacity: 0
-                }
-            }
-        ]
-
-        onOpacityChanged: {
-            if (cardbox.opacity == 0) {
-                panel.visible = false;
-            }
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 160
-            }
-        }
 
         RowLayout {
             id: header
@@ -93,66 +38,38 @@ PopupWindow {
             Layout.bottomMargin: 6
             Layout.topMargin: 6
 
-            Text {
+            StyledText {
                 text: "Notifications"
                 font.bold: true
                 font.pixelSize: 15
-                font.family: ShellGlobals.fontFamily
-                font.letterSpacing: ShellGlobals.letterSpacing
-                color: ShellGlobals.materialColors.ontertiarycontainer
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            Item {
+            TintedIcon {
                 visible: listView.count > 0
-                Layout.preferredWidth: 18
-                Layout.preferredHeight: 18
+                source: Qt.resolvedUrl("icons/clear_all.png")
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: NotifServer.clearNotifs()
                 }
-
-                Image {
-                    id: clear_all
-                    source: "icons/clear_all.png"
-                    anchors.fill: parent
-                    smooth: true
-                    mipmap: true
-                    visible: false
-                }
-
-                ColorOverlay {
-                    anchors.fill: parent
-                    source: clear_all
-                    color: ShellGlobals.materialColors.ontertiarycontainer
-                }
             }
         }
 
-        // A layout child must be sized through Layout.*; a bare width/height
-        // here is undefined behaviour and was silently ignored.
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            color: ShellGlobals.materialColors.ontertiarycontainer
-            opacity: 0.15
-        }
+        Divider {}
 
-        Text {
+        StyledText {
             Layout.fillWidth: true
             Layout.fillHeight: true
             visible: listView.count === 0
             text: "No notifications"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            color: ShellGlobals.materialColors.ontertiarycontainer
             opacity: 0.6
             font.pixelSize: 13
-            font.family: ShellGlobals.fontFamily
         }
 
         ListView {
@@ -182,7 +99,7 @@ PopupWindow {
                 NumberAnimation on opacity {
                     from: 0
                     to: 1
-                    duration: 320
+                    duration: ShellGlobals.animSlow
                 }
             }
         }

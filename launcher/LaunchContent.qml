@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import qs
+import qs.components
 import "Calculator.js" as Calculator
 import "WebSearch.js" as WebSearch
 import "Fuzzy.js" as Fuzzy
@@ -273,22 +274,18 @@ Item {
                             // icon: Quickshell resolves only hicolor application
                             // icons here, so `system-search` and friends come back
                             // empty and there is nothing to draw.
-                            Text {
+                            StyledText {
                                 anchors.centerIn: parent
                                 visible: text !== ""
                                 text: modelData.glyph ?? ""
-                                color: ShellGlobals.materialColors.ontertiarycontainer
-                                font.family: ShellGlobals.fontFamily
                                 font.pixelSize: 19
                                 font.bold: true
                             }
                         }
 
-                        Text {
+                        StyledText {
                             text: modelData.name
-                            color: ShellGlobals.materialColors.ontertiarycontainer
                             font.pixelSize: 14
-                            font.family: ShellGlobals.fontFamily
                             font.bold: true
                             elide: Text.ElideRight
                             Layout.alignment: Qt.AlignVCenter
@@ -297,13 +294,11 @@ Item {
 
                         // Right-hand affordance telling you what Enter does on
                         // the non-application rows; blank for apps.
-                        Text {
+                        StyledText {
                             text: modelData.hint ?? ""
                             visible: text !== ""
                             color: ShellGlobals.materialColors.ontertiary
                             opacity: 0.6
-                            font.pixelSize: 12
-                            font.family: ShellGlobals.fontFamily
                             Layout.alignment: Qt.AlignVCenter
                         }
                     }

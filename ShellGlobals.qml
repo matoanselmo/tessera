@@ -27,6 +27,16 @@ Singleton {
     readonly property int barGap: 4
     readonly property int iconSize: 18
 
+    // Popups and overlays
+    readonly property int popupPadding: 12
+    readonly property int popupSpacing: 10
+
+    // Animation durations, in ms. `fast` for hover and state colour changes,
+    // `fade` for popups opening and closing, `slow` for notifications.
+    readonly property int animFast: 140
+    readonly property int animFade: 160
+    readonly property int animSlow: 320
+
     // One Dark material-style roles.
     //
     // Greys run #181a1f -> #21252b -> #2c313c -> #3e4451 -> #4b5263, text is

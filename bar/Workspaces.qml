@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs
+import qs.components
 
 // Workspaces belonging to this bar's own output. niri always keeps an empty
 // workspace at the end of each output, so empty ones are hidden unless active.
@@ -69,24 +70,22 @@ Rectangle {
 
                 Behavior on implicitWidth {
                     NumberAnimation {
-                        duration: 140
+                        duration: ShellGlobals.animFast
                         easing.type: Easing.OutCubic
                     }
                 }
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 140
+                        duration: ShellGlobals.animFast
                     }
                 }
 
-                Text {
+                StyledText {
                     anchors.centerIn: parent
                     text: pill.workspace.name ?? pill.workspace.idx
-                    font.family: ShellGlobals.fontFamily
                     font.pixelSize: ShellGlobals.fontSize
                     font.bold: true
-                    font.letterSpacing: ShellGlobals.letterSpacing
 
                     color: {
                         if (pill.isUrgent)

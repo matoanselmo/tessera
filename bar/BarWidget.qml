@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 import qs
+import qs.components
 
 // Shared skeleton for every bar module: a tinted icon next to optional bold
 // text, on a rounded-by-token background. Horizontal, to match the top bar.
@@ -11,13 +11,10 @@ Rectangle {
     // File name inside bar/icons. ".png" is assumed when no extension is given,
     // so SVG icons can be named explicitly.
     property string icon: ""
-    readonly property string iconSource: root.icon === "" ? "" : `icons/${root.icon}${root.icon.includes(".") ? "" : ".png"}`
     // Optional second icon drawn before the main one, same naming rules.
     property string badge: ""
-    readonly property string badgeSource: root.badge === "" ? "" : `icons/${root.badge}${root.badge.includes(".") ? "" : ".png"}`
     property string label: ""
     property color foreground: ShellGlobals.materialColors.onprimary
-    property int iconRotation: 0
     property bool interactive: false
 
     // Pixel ceiling for the whole widget. 0 lets it size to its content, which
@@ -29,6 +26,11 @@ Rectangle {
     signal clicked
     signal rightClicked
     signal scrolled(int delta)
+
+    // Resolved here, in bar/, so callers anywhere can name icons by file name.
+    function iconUrl(name: string): url {
+        return name === "" ? "" : Qt.resolvedUrl(`icons/${name}${name.includes(".") ? "" : ".png"}`);
+    }
 
     color: ShellGlobals.materialColors.primary
     radius: ShellGlobals.radius
@@ -52,62 +54,29 @@ Rectangle {
 
         spacing: (root.label !== "" && root.icon !== "") || root.badge !== "" ? 6 : 0
 
-        Item {
+        TintedIcon {
             visible: root.badge !== ""
-            Layout.preferredWidth: ShellGlobals.iconSize
-            Layout.preferredHeight: ShellGlobals.iconSize
+            source: root.iconUrl(root.badge)
+            color: root.foreground
             Layout.alignment: Qt.AlignVCenter
-
-            Image {
-                id: badgeImage
-                anchors.fill: parent
-                source: root.badgeSource
-                smooth: true
-                mipmap: true
-                visible: false
-            }
-
-            ColorOverlay {
-                anchors.fill: parent
-                source: badgeImage
-                color: root.foreground
-            }
         }
 
-        Item {
+        TintedIcon {
             visible: root.icon !== ""
-            Layout.preferredWidth: ShellGlobals.iconSize
-            Layout.preferredHeight: ShellGlobals.iconSize
+            source: root.iconUrl(root.icon)
+            color: root.foreground
             Layout.alignment: Qt.AlignVCenter
-            rotation: root.iconRotation
-
-            Image {
-                id: iconImage
-                anchors.fill: parent
-                source: root.iconSource
-                smooth: true
-                mipmap: true
-                visible: false
-            }
-
-            ColorOverlay {
-                anchors.fill: parent
-                source: iconImage
-                color: root.foreground
-            }
         }
 
-        Text {
+        StyledText {
             visible: root.label !== ""
             text: root.label
             elide: Text.ElideRight
             Layout.fillWidth: true
-            font.family: ShellGlobals.fontFamily
+            Layout.alignment: Qt.AlignVCenter
             font.pixelSize: ShellGlobals.fontSize + 2
             font.bold: true
-            font.letterSpacing: ShellGlobals.letterSpacing
             color: root.foreground
-            Layout.alignment: Qt.AlignVCenter
         }
     }
 

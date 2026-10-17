@@ -17,7 +17,7 @@ BarWidget {
 
     Behavior on color {
         ColorAnimation {
-            duration: 140
+            duration: ShellGlobals.animFast
         }
     }
 }

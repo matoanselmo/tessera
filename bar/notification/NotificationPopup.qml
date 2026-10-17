@@ -27,7 +27,7 @@ PopupWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 320
+                duration: ShellGlobals.animSlow
             }
         }
 

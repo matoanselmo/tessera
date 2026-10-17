@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Qt5Compat.GraphicalEffects
 
 import qs
+import qs.components
 
 Variants {
     id: root
@@ -113,34 +113,19 @@ Variants {
                                 anchors.centerIn: parent
                                 spacing: 18
 
-                                Item {
+                                TintedIcon {
                                     Layout.alignment: Qt.AlignHCenter
-                                    implicitWidth: grid.tile * 0.3
-                                    implicitHeight: implicitWidth
-
-                                    Image {
-                                        id: image
-                                        anchors.fill: parent
-                                        source: `icons/${modelData.icon}.png`
-                                        smooth: true
-                                        mipmap: true
-                                        visible: false
-                                    }
-
-                                    ColorOverlay {
-                                        anchors.fill: parent
-                                        source: image
-                                        color: ShellGlobals.materialColors.ontertiary
-                                    }
+                                    size: grid.tile * 0.3
+                                    source: Qt.resolvedUrl(`icons/${modelData.icon}.png`)
+                                    color: ShellGlobals.materialColors.ontertiary
                                 }
 
-                                Text {
+                                StyledText {
                                     Layout.alignment: Qt.AlignHCenter
                                     text: modelData.text
-                                    font.pointSize: 12
-                                    color: ShellGlobals.materialColors.ontertiary
+                                    font.pixelSize: 16
                                     font.bold: true
-                                    font.family: ShellGlobals.fontFamily
+                                    color: ShellGlobals.materialColors.ontertiary
                                 }
                             }
                         }

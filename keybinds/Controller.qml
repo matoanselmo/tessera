@@ -5,6 +5,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
+import qs.components
 
 import "parse.js" as Parse
 
@@ -13,27 +14,6 @@ Singleton {
 
     // Rows parsed from the niri config, refreshed whenever the file changes.
     property var binds: []
-
-    PersistentProperties {
-        id: persist
-        property bool keybindsOpen: false
-    }
-
-    IpcHandler {
-        target: "keybinds"
-
-        function toggle(): void {
-            persist.keybindsOpen = !persist.keybindsOpen;
-        }
-
-        function open(): void {
-            persist.keybindsOpen = true;
-        }
-
-        function close(): void {
-            persist.keybindsOpen = false;
-        }
-    }
 
     FileView {
         id: configFile
@@ -47,36 +27,14 @@ Singleton {
         onLoadFailed: controller.binds = []
     }
 
-    LazyLoader {
-        id: loader
-        activeAsync: persist.keybindsOpen
-
-        PanelWindow {
-            id: keybindsWindow
-            color: "transparent"
-            implicitWidth: content.width
-            implicitHeight: content.height
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-            WlrLayershell.namespace: "shell:keybinds"
-
-            MouseArea {
-                anchors.fill: parent
-
-                onPressed: persist.keybindsOpen = false
-
-                MouseArea {
-                    anchors.centerIn: parent
-                    width: content.width
-                    height: content.height
-
-                    KeybindsContent {
-                        id: content
-                        binds: controller.binds
-                        onCloseRequested: persist.keybindsOpen = false
-                    }
-                }
+    OverlayController {
+        ipcTarget: "keybinds"
+        namespace: "shell:keybinds"
+        layer: WlrLayer.Overlay
+        exclusionMode: ExclusionMode.Ignore
+        content: Component {
+            KeybindsContent {
+                binds: controller.binds
             }
         }
     }

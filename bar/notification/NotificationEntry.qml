@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Notifications
-import Qt5Compat.GraphicalEffects
 import qs
+import qs.components
 
 Item {
     id: root
@@ -93,34 +93,18 @@ Item {
                     Layout.fillWidth: true
                     spacing: 6
 
-                    Text {
+                    StyledText {
                         id: appText
                         Layout.fillWidth: true
                         text: root.appName
                         color: ShellGlobals.materialColors.ontertiary
-                        font.family: ShellGlobals.fontFamily
-                        font.pixelSize: 12
                         elide: Text.ElideRight
                     }
 
-                    Item {
-                        Layout.preferredWidth: 14
-                        Layout.preferredHeight: 14
-
-                        Image {
-                            id: closeIcon
-                            source: "icons/close.png"
-                            anchors.fill: parent
-                            smooth: true
-                            mipmap: true
-                            visible: false
-                        }
-
-                        ColorOverlay {
-                            anchors.fill: parent
-                            source: closeIcon
-                            color: ShellGlobals.materialColors.ontertiary
-                        }
+                    TintedIcon {
+                        size: 14
+                        source: Qt.resolvedUrl("icons/close.png")
+                        color: ShellGlobals.materialColors.ontertiary
 
                         MouseArea {
                             anchors.fill: parent
@@ -129,7 +113,7 @@ Item {
                     }
                 }
 
-                Text {
+                StyledText {
                     id: sumText
                     Layout.fillWidth: true
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -137,10 +121,9 @@ Item {
                     font.bold: true
                     color: ShellGlobals.materialColors.ontertiary
                     font.pixelSize: 15
-                    font.family: ShellGlobals.fontFamily
                 }
 
-                Text {
+                StyledText {
                     id: bodText
                     Layout.fillWidth: true
                     visible: root.body.length > 0
@@ -150,7 +133,6 @@ Item {
                     // rather than printed as literal tags.
                     textFormat: Text.StyledText
                     color: ShellGlobals.materialColors.ontertiary
-                    font.family: ShellGlobals.fontFamily
                     font.pixelSize: ShellGlobals.fontSize + 2
                     maximumLineCount: 3
                     elide: Text.ElideRight
@@ -173,13 +155,11 @@ Item {
                             radius: ShellGlobals.radius
                             color: ShellGlobals.materialColors.secondary
 
-                            Text {
+                            StyledText {
                                 id: actionText
                                 anchors.centerIn: parent
                                 text: actionRect?.modelData?.text ?? "Activate"
                                 color: ShellGlobals.materialColors.onsecondary
-                                font.family: ShellGlobals.fontFamily
-                                font.pixelSize: 12
                             }
 
                             MouseArea {

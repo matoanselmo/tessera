@@ -1,19 +1,20 @@
 import QtQuick
-import Quickshell.Io
+import Quickshell
 
+// One entry in the power menu: a shell command with a label and an icon
+// from logout/icons.
 QtObject {
+    id: button
+
     required property string command
     required property string text
     required property string icon
-    property var keybind: null
 
-    id: button
+    // Resolved here so the icon name stays relative to logout/icons wherever
+    // the menu that draws it lives.
+    readonly property url iconUrl: Qt.resolvedUrl(`icons/${button.icon}.png`)
 
-    readonly property var process: Process {
-        command: ["sh", "-c", button.command]
-    }
-
-    function exec() {
-        process.startDetached();
+    function exec(): void {
+        Quickshell.execDetached(["sh", "-c", button.command]);
     }
 }

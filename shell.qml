@@ -3,7 +3,6 @@ import QtQuick
 
 import "bar"
 import "wallpaper"
-import "logout"
 import "launcher" as Launcher
 import "keybinds" as Keybinds
 
@@ -16,5 +15,4 @@ Scope {
 
     Bar {}
     Wallpaper {}
-    Logout {}
 }

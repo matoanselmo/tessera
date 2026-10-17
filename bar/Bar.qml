@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import qs
 import qs.components
 import qs.services
+import qs.logout
 import "notification"
 
 // One bar per connected screen.
@@ -30,7 +31,7 @@ Variants {
 
         // Every menu that drops from this bar. Listing one here is all it
         // takes for outside clicks to dismiss it.
-        readonly property list<BarPopup> popups: [menu, volumeMenu, clockMenu]
+        readonly property list<BarPopup> popups: [menu, volumeMenu, clockMenu, powerMenu]
 
         Menu {
             id: menu
@@ -53,6 +54,12 @@ Variants {
             id: clockMenu
             bar: bar
             anchorItem: clock
+        }
+
+        PowerMenu {
+            id: powerMenu
+            bar: bar
+            anchorItem: powerButton
         }
 
 
@@ -115,7 +122,13 @@ Variants {
                 Dnd {
                     onRightClicked: Notifications.menuOpen = !menu.visible
                 }
-                PowerButton {}
+                // Same visibility check as the notification toggle, so a click
+                // that dismisses the open menu does not reopen it.
+                PowerButton {
+                    id: powerButton
+                    active: powerMenu.visible
+                    onClicked: LogoutState.menuOpen = !powerMenu.visible
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 # quickshell
 
 A [Quickshell](https://quickshell.org) desktop shell for the niri compositor.
-It provides a top bar, an app launcher, a keybinds overlay, a logout menu,
+It provides a top bar, an app launcher, a keybinds overlay, a power menu,
 notifications and the wallpaper.
 
 Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warnings.
@@ -10,14 +10,14 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 
 | Path | What lives there |
 | --- | --- |
-| `shell.qml` | Entry point. Instantiates the bar, wallpaper and logout menu, and the launcher and keybinds singletons. |
+| `shell.qml` | Entry point. Instantiates the bar and wallpaper, and the launcher and keybinds singletons. |
 | `ShellGlobals.qml` | Config and theme: fonts, colours (`materialColors`), sizes, animation durations, search engine, world clocks. |
 | `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`. |
 | `components/` | Reusable UI pieces with no data of their own: `BarPopup`, `OverlayController`, `TintedIcon`, `StyledText`, `Divider`, `Track`. |
 | `bar/` | The bar (one per screen), its widgets, and the menus that drop from it. |
 | `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`) and fuzzy matching (`Fuzzy.js`). |
 | `keybinds/` | Searchable overlay of the binds in the niri config. |
-| `logout/` | Full-screen lock/suspend/logout/reboot/shutdown menu. |
+| `logout/` | The power actions (lock, suspend, log out, reboot, shutdown) and the power menu's open state, in `LogoutState`. `bar/PowerMenu.qml` draws them. |
 | `wallpaper/` | Background layer per screen. |
 
 Import services and components with `import qs.services` and `import qs.components`.

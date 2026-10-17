@@ -31,7 +31,7 @@ Variants {
 
         // Every menu that drops from this bar. Listing one here is all it
         // takes for outside clicks to dismiss it.
-        readonly property list<BarPopup> popups: [menu, volumeMenu, clockMenu, powerMenu]
+        readonly property list<BarPopup> popups: [menu, volumeMenu, clockMenu, powerMenu, trayMenu]
 
         Menu {
             id: menu
@@ -54,6 +54,11 @@ Variants {
             id: clockMenu
             bar: bar
             anchorItem: clock
+        }
+
+        TrayMenu {
+            id: trayMenu
+            bar: bar
         }
 
         PowerMenu {
@@ -107,6 +112,10 @@ Variants {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: ShellGlobals.barGap
+
+                Tray {
+                    menu: trayMenu
+                }
 
                 VolumeControl {
                     id: volumeControl

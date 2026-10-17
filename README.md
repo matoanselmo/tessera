@@ -13,8 +13,9 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 | `shell.qml` | Entry point. Instantiates the bar and wallpaper, and the launcher and keybinds singletons. |
 | `ShellGlobals.qml` | Config and theme: fonts, colours (`materialColors`), sizes, animation durations, search engine, world clocks. |
 | `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`. |
-| `components/` | Reusable UI pieces with no data of their own: `BarPopup`, `OverlayController`, `TintedIcon`, `StyledText`, `Divider`, `Track`. |
-| `bar/` | The bar (one per screen), its widgets, and the menus that drop from it. |
+| `components/` | Reusable UI pieces with no data of their own: `BarPopup`, `OverlayController`, `Tooltip`, `TintedIcon`, `StyledText`, `Divider`, `Track`. |
+| `bar/` | The bar (one per screen), its widgets including the system tray, and the menus that drop from it. |
+| `osd/` | On-screen displays: the volume OSD shown on the focused output. |
 | `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`) and fuzzy matching (`Fuzzy.js`). |
 | `keybinds/` | Searchable overlay of the binds in the niri config. |
 | `logout/` | The power actions (lock, suspend, log out, reboot, shutdown) and the power menu's open state, in `LogoutState`. `bar/PowerMenu.qml` draws them. |
@@ -40,7 +41,7 @@ Run `qs ipc show` to list them all.
 **A bar widget.** Make a `BarWidget` in `bar/` and set `icon` (a file in
 `bar/icons`; `.png` is assumed when there's no extension), `label`, `color` and
 `foreground`. Set `interactive: true` to receive `clicked`, `rightClicked` and
-`scrolled`. Then place it in one of the rows in `bar/Bar.qml`. Keep any polling
+`scrolled`, and `tooltip` for a hover label. Then place it in one of the rows in `bar/Bar.qml`. Keep any polling
 or system access in a `services/` singleton, so that a second monitor doesn't
 double the work.
 

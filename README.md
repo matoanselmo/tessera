@@ -4,6 +4,15 @@ A desktop shell for the [niri](https://github.com/YaLTeR/niri) compositor,
 built on [Quickshell](https://quickshell.org). Square tiles, One Dark colours,
 terminal-styled panels and quiet, smooth motion.
 
+> [!NOTE]
+> **Built with AI.** Most of Tessera's code was written by Claude (Anthropic's
+> AI model) through [Claude Code](https://claude.com/claude-code), with me
+> deciding what to build, reviewing the changes and testing them on my own
+> machine. It has only been tested on one setup (see
+> [Requirements](#requirements)), so expect rough edges on others. Read the
+> code before relying on it, especially the [lock screen](#lock-screen), which
+> handles your password.
+
 ![Tessera's desktop: the bar over the wallpaper](docs/screenshots/desktop.png)
 
 ## Features

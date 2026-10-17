@@ -23,6 +23,13 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 
 Import services and components with `import qs.services` and `import qs.components`.
 
+## Tests
+
+`./tests/run.sh` runs the unit tests for the pure-JS logic (calculator, fuzzy
+ranking, web search, keybind parsing, nmcli parsing) headlessly and exits
+non-zero on failure. Add cases to `tests/shell.qml`; new JS files under test
+also need copying in `tests/run.sh`.
+
 ## IPC
 
 Bind these in niri with `spawn "qs" "ipc" "call" ...`:

@@ -5,6 +5,8 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
+import "Nmcli.js" as Nmcli
+
 // Wired and Wi-Fi state for the bar, and the network list for the network
 // panel, whose open state and IPC target live here to register once.
 //
@@ -73,25 +75,6 @@ Singleton {
         Networking.wifiEnabled = on;
     }
 
-    // nmcli's terse output separates fields with ':' and escapes literal
-    // colons (common in SSIDs) as '\:'.
-    function splitTerse(line: string): var {
-        const fields = [];
-        let field = "";
-        for (let i = 0; i < line.length; i++) {
-            if (line[i] === "\\" && i + 1 < line.length) {
-                field += line[++i];
-            } else if (line[i] === ":") {
-                fields.push(field);
-                field = "";
-            } else {
-                field += line[i];
-            }
-        }
-        fields.push(field);
-        return fields;
-    }
-
     function refresh(): void {
         deviceQuery.running = true;
     }
@@ -110,7 +93,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 root.devices = text.split("\n").filter(l => l !== "").map(l => {
-                    const [device, type, state, connection] = root.splitTerse(l);
+                    const [device, type, state, connection] = Nmcli.splitTerse(l);
                     return { device, type, state, connection };
                 }).filter(d => d.type === "ethernet" || d.type === "wifi");
 
@@ -143,7 +126,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const active = text.split("\n").find(l => l.startsWith("*"));
-                root.wifiSignal = active ? parseInt(root.splitTerse(active)[1]) || 0 : 0;
+                root.wifiSignal = active ? parseInt(Nmcli.splitTerse(active)[1]) || 0 : 0;
             }
         }
     }

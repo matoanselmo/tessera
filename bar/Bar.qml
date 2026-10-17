@@ -128,6 +128,8 @@ Variants {
                     menu: trayMenu
                 }
 
+                MicIndicator {}
+
                 VolumeControl {
                     id: volumeControl
                     onToggleRequested: Audio.panelOpen = !volumePanel.visible

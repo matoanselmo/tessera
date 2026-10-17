@@ -7,7 +7,8 @@ import qs.components
 import qs.services
 
 // Volume level shown near the bottom of the focused output whenever the
-// default sink changes level or mute, then faded out once it goes quiet.
+// default sink changes level or mute, or the microphone is muted or unmuted,
+// then faded out once it goes quiet.
 // Clicks pass straight through it.
 Scope {
     id: root
@@ -18,17 +19,27 @@ Scope {
 
     readonly property int hideAfter: 1500
 
+    // What the OSD is showing: the output "volume" or "mic" mute.
+    property string mode: "volume"
+
+    function show(what: string): void {
+        root.mode = what;
+        root.alive = true;
+        root.shown = true;
+        hide.restart();
+    }
+
     Connections {
         target: Audio
 
         function onAdjusted() {
             // The volume panel already shows the level, right under the bar.
-            if (Audio.panelOpen)
-                return;
+            if (!Audio.panelOpen)
+                root.show("volume");
+        }
 
-            root.alive = true;
-            root.shown = true;
-            hide.restart();
+        function onMicToggled() {
+            root.show("mic");
         }
     }
 
@@ -83,22 +94,32 @@ Scope {
                         spacing: 10
 
                         TintedIcon {
-                            source: Qt.resolvedUrl(`../bar/icons/${Audio.icon}`)
-                            color: Audio.muted ? ShellGlobals.materialColors.error : ShellGlobals.materialColors.ontertiarycontainer
+                            source: Qt.resolvedUrl(`../bar/icons/${root.mode === "mic" ? (Audio.micMuted ? "mic-muted.svg" : "mic.svg") : Audio.icon}`)
+                            color: (root.mode === "mic" ? Audio.micMuted : Audio.muted) ? ShellGlobals.materialColors.error : ShellGlobals.materialColors.ontertiarycontainer
                         }
 
                         Track {
+                            visible: root.mode === "volume"
                             Layout.fillWidth: true
                             thickness: 6
                             value: Audio.muted ? 0 : Audio.volume
                         }
 
                         StyledText {
+                            visible: root.mode === "volume"
                             Layout.preferredWidth: 38
                             horizontalAlignment: Text.AlignRight
                             text: Audio.muted ? "off" : `${Audio.percent}%`
                             font.bold: true
                             font.pixelSize: ShellGlobals.fontSize + 1
+                        }
+
+                        StyledText {
+                            visible: root.mode === "mic"
+                            Layout.fillWidth: true
+                            text: Audio.micMuted ? "Microphone muted" : "Microphone on"
+                            font.bold: true
+                            font.pixelSize: ShellGlobals.fontSize + 2
                         }
                     }
                 }

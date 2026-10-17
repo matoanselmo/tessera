@@ -72,6 +72,49 @@ Singleton {
     }
 
     readonly property PwNode source: Pipewire.defaultAudioSource
+    readonly property bool micMuted: root.source?.audio?.muted ?? false
+
+    // Applications capturing audio right now.
+    readonly property var recorders: root.nodes.filter(n => n.isStream && !n.isSink)
+    readonly property bool micInUse: root.recorders.length > 0
+
+    function toggleMicMute(): void {
+        root.toggleNodeMute(root.source);
+    }
+
+    // Fired when the default input is muted or unmuted, from anywhere (the
+    // mic-mute key runs wpctl), but not on startup or when the input changes.
+    signal micToggled
+
+    property var lastMic: ({
+            source: null,
+            muted: false
+        })
+
+    function checkMic(): void {
+        if (!root.source?.ready || !root.source.audio)
+            return;
+
+        const prev = root.lastMic;
+        root.lastMic = {
+            source: root.source,
+            muted: root.micMuted
+        };
+
+        if (prev.source === root.source && prev.muted !== root.micMuted)
+            root.micToggled();
+    }
+
+    onSourceChanged: root.checkMic()
+    onMicMutedChanged: root.checkMic()
+
+    Connections {
+        target: root.source
+
+        function onReadyChanged() {
+            root.checkMic();
+        }
+    }
 
     // Hardware outputs and inputs, and applications playing sound. Quickshell
     // flags an application's playback stream as a sink too (it feeds one),

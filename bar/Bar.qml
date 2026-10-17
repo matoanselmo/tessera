@@ -29,9 +29,9 @@ Variants {
         implicitHeight: ShellGlobals.barThickness + ShellGlobals.barGap * 2
         color: ShellGlobals.materialColors.background
 
-        // Every menu that drops from this bar. Listing one here is all it
-        // takes for outside clicks to dismiss it.
-        readonly property list<BarPopup> popups: [menu, volumeMenu, clockMenu, powerMenu, trayMenu]
+        // Every menu and panel that drops from this bar (BarPopup or BarPanel).
+        // Listing one here is all it takes for outside clicks to dismiss it.
+        readonly property var popups: [menu, volumeMenu, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel]
 
         Menu {
             id: menu
@@ -59,6 +59,18 @@ Variants {
         TrayMenu {
             id: trayMenu
             bar: bar
+        }
+
+        NetworkPanel {
+            id: networkPanel
+            bar: bar
+            anchorItem: networkWidget
+        }
+
+        BluetoothPanel {
+            id: bluetoothPanel
+            bar: bar
+            anchorItem: bluetoothWidget
         }
 
         PowerMenu {
@@ -115,6 +127,18 @@ Variants {
 
                 Tray {
                     menu: trayMenu
+                }
+
+                // Same visibility check as the notification toggle, so a click
+                // that dismisses an open panel does not reopen it.
+                NetworkWidget {
+                    id: networkWidget
+                    onToggleRequested: Internet.panelOpen = !networkPanel.visible
+                }
+
+                BluetoothWidget {
+                    id: bluetoothWidget
+                    onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
                 }
 
                 VolumeControl {

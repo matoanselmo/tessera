@@ -12,8 +12,8 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 | --- | --- |
 | `shell.qml` | Entry point. Instantiates the bar and wallpaper, and the launcher and keybinds singletons. |
 | `ShellGlobals.qml` | Config and theme: fonts, colours (`materialColors`), sizes, animation durations, search engine, world clocks. |
-| `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`. |
-| `components/` | Reusable UI pieces with no data of their own: `BarPopup`, `OverlayController`, `Tooltip`, `TintedIcon`, `StyledText`, `Divider`, `Track`. |
+| `services/` | Singletons that own data and talk to the system: `Niri`, `Audio`, `Media`, `Notifications`, `SystemStats`, `Internet` (nmcli + Wi-Fi), `BluetoothState`. |
+| `components/` | Reusable UI pieces with no data of their own: `BarPopup`, `BarPanel` (a dropdown that can take the keyboard), `OverlayController`, `Tooltip`, `TintedIcon`, `StyledText`, `Divider`, `Track`, and the terminal-styled `TuiPane`, `TuiTable`, `TuiFooter`. |
 | `bar/` | The bar (one per screen), its widgets including the system tray, and the menus that drop from it. |
 | `osd/` | On-screen displays: the volume OSD shown on the focused output. |
 | `launcher/` | App launcher with inline calculator (`Calculator.js`), web search (`WebSearch.js`) and fuzzy matching (`Fuzzy.js`). |
@@ -31,6 +31,8 @@ Bind these in niri with `spawn "qs" "ipc" "call" ...`:
 qs ipc call launcher      toggle | open | close
 qs ipc call keybinds      toggle | open | close
 qs ipc call logout        toggle | open | close
+qs ipc call network       toggle | open | close
+qs ipc call bluetooth     toggle | open | close
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 ```
 

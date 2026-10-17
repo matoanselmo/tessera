@@ -11,6 +11,8 @@ Singleton {
     readonly property string fontFamily: "Adwaita Sans"
     readonly property double letterSpacing: 0
     readonly property int fontSize: 11
+    // For the terminal-styled panels (network, bluetooth), after bluetui.
+    readonly property string monoFamily: "JetBrains Mono"
 
     // Shape
     readonly property int radius: 0

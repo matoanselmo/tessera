@@ -5,7 +5,8 @@ import qs
 import qs.components
 import qs.logout
 
-// Drops from the power button: one row per power action, top to bottom.
+// Drops from the power button: a column of icon-only power actions, top to
+// bottom, exactly as wide as the button so it reads as an extension of it.
 BarPopup {
     id: menu
 
@@ -17,8 +18,8 @@ BarPopup {
     anchor.gravity: Edges.Bottom | Edges.Left
     anchor.margins.top: ShellGlobals.barGap
 
-    implicitWidth: 180
-    implicitHeight: column.implicitHeight + ShellGlobals.barGap * 2
+    implicitWidth: menu.anchorItem.width
+    implicitHeight: column.implicitHeight
 
     // Open state lives in LogoutState so the "logout" IPC target is registered
     // once; hiding the popup by any route writes back to it.
@@ -33,9 +34,8 @@ BarPopup {
             left: parent.left
             right: parent.right
             top: parent.top
-            margins: ShellGlobals.barGap
         }
-        spacing: 2
+        spacing: 0
 
         Repeater {
             model: LogoutState.actions
@@ -45,7 +45,8 @@ BarPopup {
                 required property LogoutButton modelData
 
                 Layout.fillWidth: true
-                Layout.preferredHeight: 34
+                // Square, matching the button above.
+                Layout.preferredHeight: menu.anchorItem.width
                 radius: ShellGlobals.radius
                 color: hover.containsMouse ? ShellGlobals.materialColors.tertiary : "transparent"
 
@@ -55,28 +56,10 @@ BarPopup {
                     }
                 }
 
-                RowLayout {
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 10
-                        rightMargin: 10
-                    }
-                    spacing: 10
-
-                    TintedIcon {
-                        source: row.modelData.iconUrl
-                        color: hover.containsMouse ? ShellGlobals.materialColors.ontertiary : ShellGlobals.materialColors.ontertiarycontainer
-                    }
-
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: row.modelData.text
-                        font.bold: true
-                        font.pixelSize: 13
-                        color: hover.containsMouse ? ShellGlobals.materialColors.ontertiary : ShellGlobals.materialColors.ontertiarycontainer
-                    }
+                TintedIcon {
+                    anchors.centerIn: parent
+                    source: row.modelData.iconUrl
+                    color: hover.containsMouse ? ShellGlobals.materialColors.ontertiary : ShellGlobals.materialColors.ontertiarycontainer
                 }
 
                 MouseArea {

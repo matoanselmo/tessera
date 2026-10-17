@@ -24,14 +24,14 @@ PopupWindow {
 
     function open(): void {
         popup.visible = true;
-        card.state = "Open";
+        card.shown = true;
         popup.opened();
     }
 
-    // Starts the fade; `card.onOpacityChanged` clears `visible` at the end.
+    // Starts the fade; the card unmaps the popup once it has faded out.
     function close(): void {
         if (popup.visible)
-            card.state = "Closed";
+            card.shown = false;
     }
 
     // Decided off visibility, not the card state: a popup still fading out
@@ -47,47 +47,14 @@ PopupWindow {
     // compositor rather than close() took the popup down.
     onVisibleChanged: {
         if (!popup.visible) {
-            card.state = "Closed";
+            card.shown = false;
             popup.hidden();
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: ShellGlobals.materialColors.tertiarycontainer
-        opacity: card.opacity
-        radius: ShellGlobals.radius
-    }
-
-    Item {
+    FadeCard {
         id: card
         anchors.fill: parent
-
-        state: "Closed"
-        states: [
-            State {
-                name: "Open"
-                PropertyChanges {
-                    card.opacity: 1
-                }
-            },
-            State {
-                name: "Closed"
-                PropertyChanges {
-                    card.opacity: 0
-                }
-            }
-        ]
-
-        onOpacityChanged: {
-            if (card.opacity == 0)
-                popup.visible = false;
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: ShellGlobals.animFade
-            }
-        }
+        onFadedOut: popup.visible = false
     }
 }

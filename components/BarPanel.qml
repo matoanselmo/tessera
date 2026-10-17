@@ -45,15 +45,15 @@ PanelWindow {
         const edge = panel.anchorItem.mapToItem(null, panel.anchorItem.width, 0).x;
         panel.rightInset = Math.max(0, panel.bar.width - edge);
         panel.visible = true;
-        card.state = "Open";
+        card.shown = true;
         card.forceActiveFocus();
         panel.opened();
     }
 
-    // Starts the fade; `card.onOpacityChanged` clears `visible` at the end.
+    // Starts the fade; the card unmaps the panel once it has faded out.
     function close(): void {
         if (panel.visible)
-            card.state = "Closed";
+            card.shown = false;
     }
 
     function toggle(): void {
@@ -65,50 +65,17 @@ PanelWindow {
 
     onVisibleChanged: {
         if (!panel.visible) {
-            card.state = "Closed";
+            card.shown = false;
             panel.hidden();
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: ShellGlobals.materialColors.tertiarycontainer
-        opacity: card.opacity
-        radius: ShellGlobals.radius
-    }
-
-    FocusScope {
+    FadeCard {
         id: card
         anchors.fill: parent
         focus: true
 
         Keys.onEscapePressed: panel.close()
-
-        state: "Closed"
-        states: [
-            State {
-                name: "Open"
-                PropertyChanges {
-                    card.opacity: 1
-                }
-            },
-            State {
-                name: "Closed"
-                PropertyChanges {
-                    card.opacity: 0
-                }
-            }
-        ]
-
-        onOpacityChanged: {
-            if (card.opacity == 0)
-                panel.visible = false;
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: ShellGlobals.animFade
-            }
-        }
+        onFadedOut: panel.visible = false
     }
 }

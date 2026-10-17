@@ -24,6 +24,13 @@ Saving any file hot-reloads the running shell. Run `qs log -t 40` to see warning
 
 Import services and components with `import qs.services` and `import qs.components`.
 
+## Locking on idle
+
+swayidle is started from the niri config (`spawn-at-startup "swayidle" …`) and
+calls `qs ipc call lock lock` after 10 minutes idle, before suspend, and on
+`loginctl lock-session`. Media playback holds the idle timer off. Change the
+`600` there to adjust it.
+
 ## If the lock screen ever gets stuck
 
 Should the shell crash while the session is locked, niri keeps the screen

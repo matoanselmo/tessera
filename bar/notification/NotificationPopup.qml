@@ -3,65 +3,60 @@ import Quickshell
 import qs
 import qs.services
 
+// Stack of toasts hanging below the bar's right edge, newest at the bottom.
+// Each leaves on its own timeout (paused while hovered) or when its
+// notification closes; the list itself lives in Notifications.
 PopupWindow {
     id: root
 
     required property PanelWindow bar
     required property PopupWindow menu
 
-    visible: false
     color: "transparent"
+    visible: Notifications.toasts.length > 0 && !root.menu.visible
 
     anchor.window: bar
     anchor.rect.x: bar.width - root.width - ShellGlobals.barGap
     anchor.rect.y: bar.height
 
     implicitWidth: 360
-    implicitHeight: popup.implicitHeight
+    implicitHeight: Math.max(1, stack.implicitHeight)
 
-    NotificationEntry {
-        id: popup
+    Column {
+        id: stack
         width: parent.width
-        height: implicitHeight
-        notif: null
-        opacity: 0
+        spacing: 6
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: ShellGlobals.animSlow
+        Repeater {
+            model: ScriptModel {
+                values: Notifications.toasts
             }
-        }
 
-        onOpacityChanged: {
-            if (popup.opacity == 0)
-                root.visible = false;
-        }
-    }
+            delegate: NotificationEntry {
+                id: toast
+                required property var modelData
 
-    Timer {
-        id: timer
-        interval: 3000
-        onTriggered: popup.opacity = 0
-    }
+                width: stack.width
+                notif: toast.modelData
 
-    // Declarative, rather than hand-wiring signals in Component.onCompleted.
-    Connections {
-        target: Notifications
+                NumberAnimation on opacity {
+                    from: 0
+                    to: 1
+                    duration: ShellGlobals.animSlow
+                }
 
-        function onPopup(n) {
-            popup.notif = n;
-            popup.opacity = 1;
-            root.visible = true;
-            timer.restart();
-        }
-    }
+                HoverHandler {
+                    id: hover
+                }
 
-    Connections {
-        target: root.menu
-
-        function onVisibleChanged() {
-            if (root.menu.visible)
-                root.visible = false;
+                // Restarts from the full timeout once the pointer leaves, so a
+                // toast you were reading does not vanish the instant you look away.
+                Timer {
+                    interval: Notifications.toastTimeout(toast.modelData)
+                    running: interval > 0 && !hover.hovered
+                    onTriggered: Notifications.dropToast(toast.modelData)
+                }
+            }
         }
     }
 }

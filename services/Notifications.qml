@@ -26,9 +26,30 @@ Singleton {
     // do-not-disturb back off.
     readonly property bool dnd: persist.dnd
 
-    // Fired for each incoming notification that should be shown as a toast,
-    // i.e. not while do-not-disturb is on. It is still tracked either way.
-    signal popup(Notification notification)
+    // Notifications currently shown as toasts, oldest first. Every incoming
+    // notification is tracked in the history; it only toasts when
+    // do-not-disturb is off and the history is not already open.
+    property var toasts: []
+    readonly property int maxToasts: 4
+
+    // How long a toast stays up, in ms; 0 means until dismissed. Critical
+    // ones stay, otherwise the sender's timeout wins (the spec gives it in
+    // ms), falling back to 5s when it leaves the choice to us.
+    function toastTimeout(n: Notification): int {
+        if (!n || n.urgency === NotificationUrgency.Critical)
+            return 0;
+        return n.expireTimeout > 0 ? n.expireTimeout : 5000;
+    }
+
+    function dropToast(n: Notification): void {
+        root.toasts = root.toasts.filter(t => t !== n);
+    }
+
+    // The history shows everything the toasts would, so opening it clears them.
+    onMenuOpenChanged: {
+        if (root.menuOpen)
+            root.toasts = [];
+    }
 
     function setDnd(on: bool): void {
         persist.dnd = on;
@@ -96,8 +117,11 @@ Singleton {
                 server.trackedNotifications.values[0].dismiss();
             }
 
-            if (!root.dnd)
-                root.popup(n);
+            // Gone from the toasts the moment it closes, however that happens.
+            n.closed.connect(() => root.dropToast(n));
+
+            if (!root.dnd && !root.menuOpen)
+                root.toasts = [...root.toasts, n].slice(-root.maxToasts);
         }
     }
 

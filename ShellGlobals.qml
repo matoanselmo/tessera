@@ -32,6 +32,16 @@ Singleton {
         }
     ]
 
+    // The bar and lock screen clocks show Burmese digits (၁၄:၃၅) when set.
+    // They need a font with Myanmar glyphs, e.g. Noto Sans Myanmar.
+    readonly property bool burmeseNumerals: true
+
+    function localiseDigits(text) {
+        if (!burmeseNumerals)
+            return text;
+        return text.replace(/[0-9]/g, d => String.fromCharCode(0x1040 + Number(d)));
+    }
+
     // Lock screen authentication: the PAM service and the directory it lives
     // in. openSUSE ships swaylock's (`auth include login`) in its vendor
     // directory rather than /etc/pam.d.

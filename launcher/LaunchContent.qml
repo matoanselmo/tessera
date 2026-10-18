@@ -60,16 +60,11 @@ Item {
 
     // Commands behind `@`. Typing `@` lists them; `@name` picks one. A command
     // with `list` shows its own rows, filtered by whatever follows its name
-    // (`@bg forest`); one with `run` runs on Enter.
+    // (`@config clock`); one with `run` runs on Enter.
     readonly property var commands: [
         {
-            name: "bg",
-            description: "Change the wallpaper",
-            list: q => root.wallpaperRows(q)
-        },
-        {
             name: "config",
-            description: "Change Tessera's settings",
+            description: "Change the wallpaper and settings",
             list: q => root.settingRows(q)
         },
         {
@@ -89,7 +84,7 @@ Item {
         }
     ]
 
-    // "@bg forest" → { name: "bg", rest: "forest" }.
+    // "@config wallpaper forest" → { name: "config", rest: "wallpaper forest" }.
     readonly property var commandInput: {
         const m = /^@(\S*)\s*(.*)$/.exec(search.text) ?? [];
         return {
@@ -135,15 +130,30 @@ Item {
         return rows;
     }
 
-    // Each setting with its current value, plus the file they are saved in.
+    // The wallpaper, which opens its own list (`@config wallpaper forest`),
+    // each setting with its current value, and the file they are saved in.
     function settingRows(q: string): var {
-        const rows = Settings.options.filter(o => o.name.toLowerCase().includes(q)).map(o => ({
-                    kind: "setting",
-                    name: o.name,
-                    glyph: "\u2699",
-                    hint: Settings.labelOf(o.key),
-                    key: o.key
-                }));
+        const wallpaper = /^wallpaper(?:\s+(.*))?$/.exec(q);
+        if (wallpaper)
+            return root.wallpaperRows(wallpaper[1] ?? "");
+
+        const rows = "wallpaper".includes(q) ? [
+            {
+                kind: "page",
+                name: "Wallpaper",
+                glyph: "\u25a3",
+                hint: Wallpapers.path !== "" ? Wallpapers.nameOf(Wallpapers.path) : "Default",
+                query: "@config wallpaper "
+            }
+        ] : [];
+        for (const o of Settings.options.filter(o => o.name.toLowerCase().includes(q)))
+            rows.push({
+                kind: "setting",
+                name: o.name,
+                glyph: "\u2699",
+                hint: Settings.labelOf(o.key),
+                key: o.key
+            });
         if (q === "")
             rows.push({
                 kind: "command",
@@ -219,16 +229,20 @@ Item {
             }
             entry.command.run();
             break;
-        case "wallpaper":
-            // Stays open, so you can try a few and watch them crossfade.
-            Wallpapers.set(entry.path);
+        case "page":
+            search.text = entry.query;
             return;
+        case "wallpaper":
         case "setting":
             {
-                // Stays open too, so you can cycle to the value you want. The
-                // changed row is replaced, which would push the selection on.
+                // Both stay open, so you can try a few wallpapers or cycle to
+                // the value you want. The changed rows are replaced, which
+                // would push the selection on.
                 const index = list.currentIndex;
-                Settings.next(entry.key);
+                if (entry.kind === "wallpaper")
+                    Wallpapers.set(entry.path);
+                else
+                    Settings.next(entry.key);
                 list.currentIndex = index;
                 return;
             }
@@ -403,10 +417,10 @@ Item {
                     // Typing already resets the selection. In command mode rows also
                     // change under you (the current wallpaper's marker moves), and
                     // the selection should stay where you left it, until you
-                    // switch to another command.
+                    // switch to another command or page (`@config wallpaper`).
                     property string shownCommand: ""
                     onValuesChanged: {
-                        const command = root.mode === "command" ? root.commandInput.name : "";
+                        const command = root.mode === "command" ? `${root.commandInput.name} ${root.commandInput.rest.split(" ")[0]}` : "";
                         if (root.mode !== "command" || command !== shownCommand)
                             list.currentIndex = 0;
                         shownCommand = command;

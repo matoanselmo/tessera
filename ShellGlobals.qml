@@ -58,7 +58,7 @@ Singleton {
     // points to here, so it is hidden in all but name, and full of app data.
     readonly property var fileSearchSkip: ["~/config"]
 
-    // Wallpapers to choose from with `@bg` in the launcher. Any PNG, JPEG or
+    // Wallpapers to choose from with `@config` in the launcher. Any PNG, JPEG or
     // WebP dropped in shows up straight away.
     readonly property string wallpaperDir: "~/.config/tessera/backgrounds"
 

@@ -26,8 +26,8 @@ terminal-styled panels and quiet, smooth motion.
   - `;` clipboard history (cliphist)
   - `:` emoji
   - `/` files in your home folder
-  - `@` commands, such as `@bg` to pick a wallpaper, `@config` for settings,
-    `@lock`, `@dnd` and `@terminal`
+  - `@` commands, such as `@config` for the wallpaper and settings, `@lock`,
+    `@dnd` and `@terminal`
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
   them with the keyboard (`tab`, `j`/`k`, and the footer's keys) or the mouse.
@@ -37,7 +37,7 @@ terminal-styled panels and quiet, smooth motion.
   checked through PAM. It locks automatically on idle via swayidle.
 - **Popup terminal.** A fresh foot that floats over everything and closes as
   soon as it loses focus.
-- **Wallpapers.** Drop images in a folder and pick one with `@bg`. Changes
+- **Wallpapers.** Drop images in a folder and pick one from `@config`. Changes
   crossfade.
 - **And:** a keybinds overlay read from your niri config, an icon-only power
   menu that asks twice before ending the session, volume and microphone OSDs,
@@ -45,7 +45,7 @@ terminal-styled panels and quiet, smooth motion.
 
 | Launcher | Wallpaper picker |
 | --- | --- |
-| ![The launcher](docs/screenshots/launcher.png) | ![The @bg wallpaper picker](docs/screenshots/wallpapers.png) |
+| ![The launcher](docs/screenshots/launcher.png) | ![The wallpaper picker](docs/screenshots/wallpapers.png) |
 
 | Volume panel | Power menu |
 | --- | --- |
@@ -79,7 +79,7 @@ Quickshell loads `~/.config/quickshell` by default:
 
 ```sh
 git clone https://github.com/matoanselmo/tessera ~/.config/quickshell
-mkdir -p ~/.config/tessera/backgrounds   # wallpapers for @bg
+mkdir -p ~/.config/tessera/backgrounds   # wallpapers for @config
 ```
 
 Then add the pieces below to `~/.config/niri/config.kdl` and log in again.
@@ -132,7 +132,7 @@ anything else that changes the volume) without further setup.
 | `;` | browse clipboard history; Enter copies, Shift+Delete forgets |
 | `:fire` | find emoji by name; Enter copies |
 | `/notes` | find files under `~`; Enter opens, Shift+Enter opens the folder |
-| `@` | list commands; `@bg` picks a wallpaper, `@config` changes settings |
+| `@` | list commands; `@config` picks a wallpaper and changes settings |
 
 `Ctrl+J`/`Ctrl+K` or the arrow keys move the selection, and `Esc` closes.
 
@@ -164,9 +164,10 @@ qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 
 ## Configuration
 
-A few settings can be changed from the launcher with `@config`: Enter on a
-row cycles its value. They are saved to `~/.config/tessera/settings.json`,
-which can also be edited by hand:
+The wallpaper and a few settings can be changed from the launcher with
+`@config`. Enter on Wallpaper opens the picker (`@config wallpaper forest`
+filters it), and Enter on a setting cycles its value. Settings are saved to
+`~/.config/tessera/settings.json`, which can also be edited by hand:
 
 | Setting | Default | What it does |
 | --- | --- | --- |
@@ -182,7 +183,7 @@ The rest live in [`ShellGlobals.qml`](ShellGlobals.qml):
 | `materialColors` | One Dark | Every colour in the shell, by role |
 | `radius` | `0` | Corner radius everywhere; square by default |
 | `animFast` / `animNormal` / `animSlow` | 150 / 250 / 400 ms | Durations for hover, opening and long travel |
-| `wallpaperDir` | `~/.config/tessera/backgrounds` | Folder `@bg` lists (PNG, JPEG, WebP) |
+| `wallpaperDir` | `~/.config/tessera/backgrounds` | Folder the wallpaper picker lists (PNG, JPEG, WebP) |
 | `fileSearchSkip` | `["~/config"]` | Folders under `~` that `/` file search ignores |
 | `searchEngineUrl`, `searchEngineName` | Google | Web search from the launcher (`%s` is the query) |
 | `worldClocks` | Brasília | Extra clocks in the clock menu, as fixed UTC offsets |

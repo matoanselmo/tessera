@@ -35,6 +35,7 @@ Singleton {
     // The bar and lock screen clocks show Burmese digits (၁၄:၃၅) when set.
     // They need a font with Myanmar glyphs, e.g. Noto Sans Myanmar. Changed
     // with `@config`, like the clock format and motionScale (see Settings).
+    // I'm learning Burmese for my girlfriend, so the clock helps me practise. ❤
     readonly property bool burmeseNumerals: Settings.burmeseNumerals
 
     // Every clock's hours and minutes: 14:35 or 2:35 PM.

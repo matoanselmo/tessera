@@ -68,6 +68,11 @@ Item {
             list: q => root.wallpaperRows(q)
         },
         {
+            name: "config",
+            description: "Change Tessera's settings",
+            list: q => root.settingRows(q)
+        },
+        {
             name: "lock",
             description: "Lock the screen",
             run: () => LockState.lock()
@@ -125,6 +130,28 @@ Item {
                 hint: ShellGlobals.wallpaperDir,
                 command: {
                     run: () => Wallpapers.openFolder()
+                }
+            });
+        return rows;
+    }
+
+    // Each setting with its current value, plus the file they are saved in.
+    function settingRows(q: string): var {
+        const rows = Settings.options.filter(o => o.name.toLowerCase().includes(q)).map(o => ({
+                    kind: "setting",
+                    name: o.name,
+                    glyph: "\u2699",
+                    hint: Settings.labelOf(o.key),
+                    key: o.key
+                }));
+        if (q === "")
+            rows.push({
+                kind: "command",
+                name: "Open settings.json",
+                glyph: "\u2197",
+                hint: "~/.config/tessera",
+                command: {
+                    run: () => Quickshell.execDetached(["xdg-open", Settings.path])
                 }
             });
         return rows;
@@ -196,6 +223,15 @@ Item {
             // Stays open, so you can try a few and watch them crossfade.
             Wallpapers.set(entry.path);
             return;
+        case "setting":
+            {
+                // Stays open too, so you can cycle to the value you want. The
+                // changed row is replaced, which would push the selection on.
+                const index = list.currentIndex;
+                Settings.next(entry.key);
+                list.currentIndex = index;
+                return;
+            }
         }
 
         root.closeRequested();
@@ -366,10 +402,14 @@ Item {
 
                     // Typing already resets the selection. In command mode rows also
                     // change under you (the current wallpaper's marker moves), and
-                    // the selection should stay where you left it.
+                    // the selection should stay where you left it, until you
+                    // switch to another command.
+                    property string shownCommand: ""
                     onValuesChanged: {
-                        if (root.mode !== "command")
+                        const command = root.mode === "command" ? root.commandInput.name : "";
+                        if (root.mode !== "command" || command !== shownCommand)
                             list.currentIndex = 0;
+                        shownCommand = command;
                     }
                 }
 

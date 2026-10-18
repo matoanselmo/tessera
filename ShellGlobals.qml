@@ -33,8 +33,12 @@ Singleton {
     ]
 
     // The bar and lock screen clocks show Burmese digits (၁၄:၃၅) when set.
-    // They need a font with Myanmar glyphs, e.g. Noto Sans Myanmar.
-    readonly property bool burmeseNumerals: true
+    // They need a font with Myanmar glyphs, e.g. Noto Sans Myanmar. Changed
+    // with `@config`, like the clock format and motionScale (see Settings).
+    readonly property bool burmeseNumerals: Settings.burmeseNumerals
+
+    // Every clock's hours and minutes: 14:35 or 2:35 PM.
+    readonly property string timeFormat: Settings.use24Hour ? "HH:mm" : "h:mm AP"
 
     function localiseDigits(text) {
         if (!burmeseNumerals)
@@ -70,7 +74,8 @@ Singleton {
     // for things opening, moving or resizing, `slow` for longer travel such
     // as toasts sliding in. Every animation is scaled by `motionScale`, so the
     // whole shell's pace is one number: 1.25 is calmer, 0 turns motion off.
-    readonly property real motionScale: 1
+    // It is set with `@config` (see Settings).
+    readonly property real motionScale: Settings.motionScale
     readonly property int animFast: 150
     readonly property int animNormal: 250
     readonly property int animSlow: 400

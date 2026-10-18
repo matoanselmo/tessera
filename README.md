@@ -26,8 +26,8 @@ terminal-styled panels and quiet, smooth motion.
   - `;` clipboard history (cliphist)
   - `:` emoji
   - `/` files in your home folder
-  - `@` commands, such as `@bg` to pick a wallpaper, `@lock`, `@dnd` and
-    `@terminal`
+  - `@` commands, such as `@bg` to pick a wallpaper, `@config` for settings,
+    `@lock`, `@dnd` and `@terminal`
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
   them with the keyboard (`tab`, `j`/`k`, and the footer's keys) or the mouse.
@@ -132,7 +132,7 @@ anything else that changes the volume) without further setup.
 | `;` | browse clipboard history; Enter copies, Shift+Delete forgets |
 | `:fire` | find emoji by name; Enter copies |
 | `/notes` | find files under `~`; Enter opens, Shift+Enter opens the folder |
-| `@` | list commands; `@bg` picks a wallpaper |
+| `@` | list commands; `@bg` picks a wallpaper, `@config` changes settings |
 
 `Ctrl+J`/`Ctrl+K` or the arrow keys move the selection, and `Esc` closes.
 
@@ -164,14 +164,23 @@ qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 
 ## Configuration
 
-Settings live in [`ShellGlobals.qml`](ShellGlobals.qml):
+A few settings can be changed from the launcher with `@config`: Enter on a
+row cycles its value. They are saved to `~/.config/tessera/settings.json`,
+which can also be edited by hand:
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `burmeseNumerals` | `true` | Burmese digits on the bar and lock screen clocks (needs a Myanmar font, such as Noto Sans Myanmar) |
+| `use24Hour` | `true` | 14:35 or 2:35 PM on every clock |
+| `motionScale` | `1` | Multiplies every animation's duration; `0` turns motion off |
+
+The rest live in [`ShellGlobals.qml`](ShellGlobals.qml):
 
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `fontFamily`, `monoFamily`, `fontSize` | Adwaita Sans, JetBrains Mono, 11 | UI and panel fonts |
 | `materialColors` | One Dark | Every colour in the shell, by role |
 | `radius` | `0` | Corner radius everywhere; square by default |
-| `motionScale` | `1` | Multiplies every animation's duration; `0` turns motion off |
 | `animFast` / `animNormal` / `animSlow` | 150 / 250 / 400 ms | Durations for hover, opening and long travel |
 | `wallpaperDir` | `~/.config/tessera/backgrounds` | Folder `@bg` lists (PNG, JPEG, WebP) |
 | `fileSearchSkip` | `["~/config"]` | Folders under `~` that `/` file search ignores |

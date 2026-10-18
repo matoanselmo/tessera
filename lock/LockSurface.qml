@@ -54,7 +54,7 @@ FocusScope {
 
             StyledText {
                 Layout.alignment: Qt.AlignHCenter
-                text: ShellGlobals.localiseDigits(Qt.formatDateTime(clock.date, "HH:mm"))
+                text: ShellGlobals.localiseDigits(Qt.formatDateTime(clock.date, ShellGlobals.timeFormat))
                 font.pixelSize: 96
                 font.bold: true
                 color: ShellGlobals.materialColors.onprimarycontainer

@@ -94,7 +94,8 @@ BarPopup {
 
     // `{ time, label }` for a fixed UTC offset at the current minute. Shifting
     // the instant by the offset and reading it back in UTC gives that zone's
-    // wall clock without needing Intl in the JS engine.
+    // wall clock without needing Intl in the JS engine; that is then rebuilt as
+    // a local time only so it can be formatted like the others.
     function worldTime(name: string, offsetMinutes: int): var {
         const now = clock.date;
         const z = new Date(now.getTime() + offsetMinutes * 60000);
@@ -103,7 +104,7 @@ BarPopup {
         const zoneDay = Date.UTC(z.getUTCFullYear(), z.getUTCMonth(), z.getUTCDate());
         const diff = Math.round((zoneDay - localDay) / 86400000);
         return {
-            time: `${menu.pad(z.getUTCHours())}:${menu.pad(z.getUTCMinutes())}`,
+            time: Qt.formatDateTime(new Date(2000, 0, 1, z.getUTCHours(), z.getUTCMinutes()), ShellGlobals.timeFormat),
             label: diff > 0 ? `${name}, tomorrow` : diff < 0 ? `${name}, yesterday` : name
         };
     }
@@ -129,7 +130,7 @@ BarPopup {
                 spacing: 0
 
                 StyledText {
-                    text: Qt.formatDateTime(clock.date, "HH:mm")
+                    text: Qt.formatDateTime(clock.date, ShellGlobals.timeFormat)
                     font.bold: true
                     font.pixelSize: 26
                     color: ShellGlobals.materialColors.onprimarycontainer

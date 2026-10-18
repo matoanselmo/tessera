@@ -12,7 +12,7 @@ BarWidget {
 
     icon: "clock"
     badge: Media.playing ? "music.svg" : ""
-    label: ShellGlobals.localiseDigits(Qt.formatDateTime(clock.date, "HH:mm"))
+    label: ShellGlobals.localiseDigits(Qt.formatDateTime(clock.date, ShellGlobals.timeFormat))
     color: root.hovered ? ShellGlobals.materialColors.surfacebright : ShellGlobals.materialColors.tertiary
     foreground: ShellGlobals.materialColors.ontertiary
 

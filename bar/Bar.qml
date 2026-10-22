@@ -156,6 +156,10 @@ Variants {
                     onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
                 }
 
+                // Hides itself without a laptop battery; a click cycles the
+                // power profile.
+                BatteryWidget {}
+
                 // Same visibility check as the notification toggle, so a click
                 // that dismisses the open menu does not reopen it.
                 PowerButton {

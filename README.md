@@ -20,7 +20,8 @@ terminal-styled panels and quiet, smooth motion.
 - **Bar.** Workspaces with the apps open on each, the focused window's title,
   a clock with a calendar, world clocks and media controls, a system tray, and
   indicators for volume, CPU, memory, notifications, network, Bluetooth, the
-  microphone and power. Everything has hover tooltips.
+  microphone, battery and power. Everything has hover tooltips. The battery
+  only appears on machines that have one; clicking it cycles the power profile.
 - **Launcher.** Fuzzy app search that learns which apps you use, with inline
   maths and web search, plus prefix modes:
   - `;` clipboard history (cliphist)
@@ -66,6 +67,7 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 | The shell | Quickshell, niri, Qt 6 with Qt5Compat (GraphicalEffects) and `Qt.labs.folderlistmodel` |
 | Audio | PipeWire (`wpctl` for media keys) |
 | Network and Bluetooth | NetworkManager (`nmcli`), BlueZ |
+| Battery and power profiles | UPower, `power-profiles-daemon` |
 | Clipboard history | `cliphist`, `wl-clipboard` |
 | File search | `ripgrep` |
 | Popup terminal | `foot` |

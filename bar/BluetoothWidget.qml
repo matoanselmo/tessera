@@ -8,7 +8,7 @@ BarWidget {
 
     signal toggleRequested
 
-    visible: BluetoothState.adapter !== null
+    present: BluetoothState.adapter !== null
     icon: BluetoothState.icon
     label: BluetoothState.connected.length > 0 ? `${BluetoothState.connected.length}` : ""
     color: ShellGlobals.materialColors.tertiarycontainer

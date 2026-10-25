@@ -31,7 +31,7 @@ Variants {
 
         // Every menu and panel that drops from this bar (BarPopup or BarPanel).
         // Listing one here is all it takes for outside clicks to dismiss it.
-        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel]
+        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel, systemPanel, brightnessPanel, controlPanel]
 
         Menu {
             id: menu
@@ -46,7 +46,7 @@ Variants {
         VolumePanel {
             id: volumePanel
             bar: bar
-            anchorItem: volumeControl
+            anchorItem: bar.slotFor("volume")
         }
 
         ClockMenu {
@@ -63,19 +63,43 @@ Variants {
         NetworkPanel {
             id: networkPanel
             bar: bar
-            anchorItem: networkWidget
+            anchorItem: bar.slotFor("network")
         }
 
         BluetoothPanel {
             id: bluetoothPanel
             bar: bar
-            anchorItem: bluetoothWidget
+            anchorItem: bar.slotFor("bluetooth")
+        }
+
+        ControlPanel {
+            id: controlPanel
+            bar: bar
+            anchorItem: bar.slots.control ?? null
+        }
+
+        // Keep awake, from the control center: holds off swayidle while on.
+        IdleInhibitor {
+            window: bar
+            enabled: ControlCenter.keepAwake
+        }
+
+        BrightnessPanel {
+            id: brightnessPanel
+            bar: bar
+            anchorItem: bar.slotFor("brightness")
+        }
+
+        SystemPanel {
+            id: systemPanel
+            bar: bar
+            anchorItem: bar.slots.memory ?? null
         }
 
         PowerMenu {
             id: powerMenu
             bar: bar
-            anchorItem: powerButton
+            anchorItem: bar.slots.power ?? null
         }
 
 
@@ -124,49 +148,182 @@ Variants {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: ShellGlobals.barGap
 
-                Tray {
-                    menu: trayMenu
-                }
+                // In the order the settings window keeps. Keyed by id, so
+                // moving one moves its slot rather than rebuilding the row.
+                Repeater {
+                    id: rightWidgets
+                    model: ScriptModel {
+                        values: Settings.barWidgets.map(w => w.id)
+                    }
 
-                MicIndicator {}
+                    // Grows out of nothing and fades in when its widget is
+                    // switched on or has something to show (the battery on a
+                    // laptop, the microphone while in use), and shrinks away
+                    // again, so its neighbours slide over instead of jumping.
+                    Item {
+                        id: slot
 
-                VolumeControl {
-                    id: volumeControl
-                    onToggleRequested: Audio.panelOpen = !volumePanel.visible
-                }
+                        required property string modelData
+                        readonly property string widgetId: slot.modelData
+                        readonly property bool wanted: Settings.widgetInBar(slot.widgetId) && (loader.item?.present ?? false)
 
-                CpuUsage {}
-                MemUsage {}
-                // Left click toggles do-not-disturb, right click opens the list.
-                // Decided off the popup's own visibility: a click that dismisses
-                // the menu through the DismissLayer lands here while it is still
-                // fading, and should not bounce it back open.
-                Dnd {
-                    onRightClicked: Notifications.menuOpen = !menu.visible
-                }
-                // Same visibility check as the notification toggle, so a click
-                // that dismisses an open panel does not reopen it.
-                NetworkWidget {
-                    id: networkWidget
-                    onToggleRequested: Internet.panelOpen = !networkPanel.visible
-                }
+                        property real reveal: slot.wanted ? 1 : 0
 
-                BluetoothWidget {
-                    id: bluetoothWidget
-                    onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
-                }
+                        Behavior on reveal {
+                            Anim {}
+                        }
 
-                // Hides itself without a laptop battery; a click cycles the
-                // power profile.
-                BatteryWidget {}
+                        implicitWidth: loader.implicitWidth * slot.reveal
+                        implicitHeight: loader.implicitHeight
+                        opacity: slot.reveal
+                        visible: slot.reveal > 0
+                        clip: slot.reveal < 1
+                        Layout.alignment: Qt.AlignVCenter
 
-                // Same visibility check as the notification toggle, so a click
-                // that dismisses the open menu does not reopen it.
-                PowerButton {
-                    id: powerButton
-                    active: powerMenu.visible
-                    onClicked: LogoutState.menuOpen = !powerMenu.visible
+                        Loader {
+                            id: loader
+                            sourceComponent: bar.widgets[slot.widgetId] ?? null
+                        }
+                    }
                 }
+            }
+        }
+
+        // Each right-side widget's slot by id, for panels to open under.
+        // Rebuilt as slots are created or moved.
+        readonly property var slots: {
+            const map = {};
+            Settings.barWidgets;
+            for (let i = 0; i < rightWidgets.count; i++) {
+                const item = rightWidgets.itemAt(i);
+                if (item)
+                    map[item.widgetId] = item;
+            }
+            return map;
+        }
+
+        // Where a widget's panel opens: under the widget, or under the
+        // control center button while the widget is folded into it.
+        function slotFor(id: string): Item {
+            const folded = Settings.controlCenter && Settings.widgetCatalog.find(c => c.id === id)?.folded;
+            return (folded ? bar.slots.control : bar.slots[id]) ?? null;
+        }
+
+        readonly property var widgets: ({
+                tray: trayWidget,
+                mic: micWidget,
+                volume: volumeWidget,
+                cpu: cpuWidget,
+                memory: memoryWidget,
+                dnd: dndWidget,
+                network: networkWidget,
+                bluetooth: bluetoothWidget,
+                brightness: brightnessWidget,
+                control: controlWidget,
+                battery: batteryWidget,
+                power: powerWidget
+            })
+
+        Component {
+            id: trayWidget
+            Tray {
+                menu: trayMenu
+            }
+        }
+
+        Component {
+            id: micWidget
+            MicIndicator {}
+        }
+
+        Component {
+            id: volumeWidget
+            VolumeControl {
+                onToggleRequested: Audio.panelOpen = !volumePanel.visible
+            }
+        }
+
+        // CPU and memory both open the system monitor, sorted by what was
+        // clicked. Same visibility check as the notification toggle, so a
+        // click that dismisses the open panel does not reopen it.
+        Component {
+            id: cpuWidget
+            CpuUsage {
+                onClicked: {
+                    SystemStats.sortBy = "cpu";
+                    SystemStats.panelOpen = !systemPanel.visible;
+                }
+            }
+        }
+
+        Component {
+            id: memoryWidget
+            MemUsage {
+                onClicked: {
+                    SystemStats.sortBy = "mem";
+                    SystemStats.panelOpen = !systemPanel.visible;
+                }
+            }
+        }
+
+        // Left click toggles do-not-disturb, right click opens the list.
+        // Decided off the popup's own visibility: a click that dismisses the
+        // menu through the DismissLayer lands here while it is still fading,
+        // and should not bounce it back open.
+        Component {
+            id: dndWidget
+            Dnd {
+                onRightClicked: Notifications.menuOpen = !menu.visible
+            }
+        }
+
+        // Same visibility check as the notification toggle, so a click that
+        // dismisses an open panel does not reopen it.
+        Component {
+            id: networkWidget
+            NetworkWidget {
+                onToggleRequested: Internet.panelOpen = !networkPanel.visible
+            }
+        }
+
+        Component {
+            id: bluetoothWidget
+            BluetoothWidget {
+                onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
+            }
+        }
+
+        // Hides itself without a backlight. Same visibility check as the
+        // notification toggle.
+        Component {
+            id: brightnessWidget
+            BrightnessWidget {
+                onToggleRequested: Brightness.panelOpen = !brightnessPanel.visible
+            }
+        }
+
+        // Same visibility check as the notification toggle, so a click that
+        // dismisses the open panel does not reopen it.
+        Component {
+            id: controlWidget
+            ControlButton {
+                active: controlPanel.visible
+                onClicked: ControlCenter.panelOpen = !controlPanel.visible
+            }
+        }
+
+        // Hides itself without a laptop battery; a click cycles the power
+        // profile.
+        Component {
+            id: batteryWidget
+            BatteryWidget {}
+        }
+
+        Component {
+            id: powerWidget
+            PowerButton {
+                active: powerMenu.visible
+                onClicked: LogoutState.menuOpen = !powerMenu.visible
             }
         }
     }

@@ -10,10 +10,11 @@ repo=$(cd "$(dirname "$0")/.." && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-mkdir -p "$work/launcher" "$work/keybinds" "$work/services"
+mkdir -p "$work/launcher" "$work/keybinds" "$work/services" "$work/settings"
 cp "$repo"/launcher/*.js "$work/launcher/"
 cp "$repo/keybinds/parse.js" "$work/keybinds/"
-cp "$repo/services/Nmcli.js" "$work/services/"
+cp "$repo/services/Nmcli.js" "$repo/services/Procs.js" "$work/services/"
+cp "$repo/settings/clocks.js" "$work/settings/"
 cp "$repo/tests/shell.qml" "$work/"
 
 # Quickshell has no way to exit from QML, so the timeout ends the run; the

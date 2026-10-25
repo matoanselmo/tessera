@@ -22,23 +22,42 @@ terminal-styled panels and quiet, smooth motion.
   indicators for volume, CPU, memory, notifications, network, Bluetooth, the
   microphone, battery and power. Everything has hover tooltips. The battery
   only appears on machines that have one; clicking it cycles the power profile.
+  Brightness works the same way: it shows only with a backlight, scrolling
+  adjusts it and clicking opens a slider.
+  Hovering CPU or memory lists the five processes using the most of it.
 - **Launcher.** Fuzzy app search that learns which apps you use, with inline
   maths and web search, plus prefix modes:
-  - `;` clipboard history (cliphist)
+  - `;` clipboard history (cliphist), with image thumbnails and a preview
+    of the selected entry
   - `:` emoji
   - `/` files in your home folder
-  - `@` commands, such as `@config` for the wallpaper and settings, `@lock`,
+  - `@` commands, such as `@settings` for the settings window, `@config`
+    for quick changes from the launcher, `@lock`,
     `@dnd` and `@terminal`
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
   them with the keyboard (`tab`, `j`/`k`, and the footer's keys) or the mouse.
+- **Control center.** After macOS's: Wi-Fi, Bluetooth, microphone, do not
+  disturb, the power profile (or keep awake on a desktop), display and sound
+  sliders, now playing, and lock, screenshot and settings tiles, in one
+  dropdown. While it is on, network, sound and brightness fold into its bar
+  button, the way Windows groups them, and Bluetooth joins only while a device
+  is connected. Turn it off in settings for the classic bar. Keyboard: `j`/`k`
+  move between tiles, Enter works one, `h`/`l` moves a slider.
+- **System monitor.** A pocket [btop](https://github.com/aristocratos/btop):
+  click CPU or memory for a usage graph, per-core meters, memory and swap, and
+  the busiest processes. `s` switches between CPU and memory order, and `x`
+  twice ends the selected process.
 - **Notifications.** Toasts that stack and follow each sender's timeout, a
   history panel, and do-not-disturb.
 - **Lock screen.** Your wallpaper blurred, with a clock and a password field,
   checked through PAM. It locks automatically on idle via swayidle.
 - **Popup terminal.** A fresh foot that floats over everything and closes as
   soon as it loses focus.
-- **Wallpapers.** Drop images in a folder and pick one from `@config`. Changes
+- **Settings window.** Clock format and world clocks, which bar widgets
+  show and in what order, the bar's height, wallpapers, animation speed and
+  the web search engine, all in one terminal-styled window (`@settings`).
+- **Wallpapers.** Drop images in a folder and pick one in settings or `@config`. Changes
   crossfade.
 - **And:** a keybinds overlay read from your niri config, an icon-only power
   menu that asks twice before ending the session, volume and microphone OSDs,
@@ -68,7 +87,9 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 | Audio | PipeWire (`wpctl` for media keys) |
 | Network and Bluetooth | NetworkManager (`nmcli`), BlueZ |
 | Battery and power profiles | UPower, `power-profiles-daemon` |
-| Clipboard history | `cliphist`, `wl-clipboard` |
+| Control center screenshots | `grim`, `slurp` |
+| Brightness | systemd-logind (`busctl`); bind the brightness keys to `qs ipc call brightness up` and `down` |
+| Clipboard history | `cliphist`, `wl-clipboard`; `wtype` for copy & paste |
 | File search | `ripgrep` |
 | Popup terminal | `foot` |
 | Locking on idle | `swayidle`, and `swaylock`'s PAM file (see [Lock screen](#lock-screen)) |
@@ -131,10 +152,10 @@ anything else that changes the volume) without further setup.
 | an app name | launch it (apps you use often rank first among equal matches) |
 | `2^10`, `sqrt 2`, `1,000 * 3` | do maths; Enter copies the result |
 | a URL or anything else | open it, or search the web |
-| `;` | browse clipboard history; Enter copies, Shift+Delete forgets |
+| `;` | browse clipboard history; Enter copies, Shift+Enter copies and pastes, Shift+Delete forgets, Tab shows only images |
 | `:fire` | find emoji by name; Enter copies |
 | `/notes` | find files under `~`; Enter opens, Shift+Enter opens the folder |
-| `@` | list commands; `@config` picks a wallpaper and changes settings |
+| `@` | list commands; `@settings` opens the settings window, `@config` changes them from the launcher |
 
 `Ctrl+J`/`Ctrl+K` or the arrow keys move the selection, and `Esc` closes.
 
@@ -159,6 +180,10 @@ qs ipc call wallpaper     next | previous | random | set <path>
 qs ipc call volume        toggle | open | close
 qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close
+qs ipc call system        toggle | open | close         # the system monitor
+qs ipc call settings      toggle | open | close
+qs ipc call control       toggle | open | close | screenshot
+qs ipc call brightness    up | down | set <percent> | toggle | open | close
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 ```
 
@@ -166,16 +191,26 @@ qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 
 ## Configuration
 
-The wallpaper and a few settings can be changed from the launcher with
-`@config`. Enter on Wallpaper opens the picker (`@config wallpaper forest`
-filters it), and Enter on a setting cycles its value. Settings are saved to
-`~/.config/tessera/settings.json`, which can also be edited by hand:
+Most settings live in the settings window (`@settings`, or
+`qs ipc call settings toggle`). Tab moves between the sections and the
+settings, `j`/`k` between rows and `h`/`l` changes a value; the footer shows
+what else the selected row can do. The simple ones can also be cycled from the
+launcher with `@config`. Everything is saved to
+`~/.config/tessera/settings.json`, which is watched, so editing it by hand
+applies at once:
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `burmeseNumerals` | `true` | Burmese digits on the bar and lock screen clocks (needs a Myanmar font, such as Noto Sans Myanmar) |
 | `use24Hour` | `true` | 14:35 or 2:35 PM on every clock |
+| `burmeseNumerals` | `true` | Burmese digits on the bar and lock screen clocks (needs a Myanmar font, such as Noto Sans Myanmar) |
+| `showSeconds` | `false` | Seconds in the bar clock |
+| `worldClocks` | Brasília | Extra clocks in the clock menu, as `{ name, offsetMinutes }` (fixed UTC offsets) |
+| `controlCenter` | `true` | Fold network, sound and brightness (and Bluetooth while connected) into the control center button |
+| `barThickness` | `28` | Bar height in pixels (24, 28 or 32) |
+| `barWidgets` | all, in the default order | The bar's right-hand widgets, left to right, as `{ id, shown }` |
+| `wallpaperTransition` | `"crossfade"` | `"none"` swaps wallpapers without fading |
 | `motionScale` | `1` | Multiplies every animation's duration; `0` turns motion off |
+| `searchEngine` | `"google"` | Launcher web search: `google`, `duckduckgo`, `brave` or `startpage` |
 
 The rest live in [`ShellGlobals.qml`](ShellGlobals.qml):
 
@@ -187,8 +222,6 @@ The rest live in [`ShellGlobals.qml`](ShellGlobals.qml):
 | `animFast` / `animNormal` / `animSlow` | 150 / 250 / 400 ms | Durations for hover, opening and long travel |
 | `wallpaperDir` | `~/.config/tessera/backgrounds` | Folder the wallpaper picker lists (PNG, JPEG, WebP) |
 | `fileSearchSkip` | `["~/config"]` | Folders under `~` that `/` file search ignores |
-| `searchEngineUrl`, `searchEngineName` | Google | Web search from the launcher (`%s` is the query) |
-| `worldClocks` | Brasília | Extra clocks in the clock menu, as fixed UTC offsets |
 | `lockPamConfig`, `lockPamDir` | `swaylock`, `/usr/lib/pam.d` | PAM service the lock screen authenticates with |
 
 Saving any file hot-reloads the running shell. `qs log -t 40` shows warnings.

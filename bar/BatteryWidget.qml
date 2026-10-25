@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell.Services.UPower
 import qs
+import qs.services
 
 // Charge level of the laptop's battery, with a bolt while it charges. Hidden on
 // machines without one, so the same shell runs on the desktop unchanged.
@@ -15,7 +16,7 @@ BarWidget {
     readonly property bool full: root.device.state === UPowerDeviceState.FullyCharged
     readonly property bool low: root.device.state === UPowerDeviceState.Discharging && root.percent <= 15
 
-    visible: root.device.ready && root.device.isLaptopBattery
+    present: root.device.ready && root.device.isLaptopBattery
 
     icon: {
         const p = root.percent;
@@ -37,30 +38,10 @@ BarWidget {
         return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
     }
 
-    function profileName(profile: int): string {
-        switch (profile) {
-        case PowerProfile.PowerSaver:
-            return "Power saver";
-        case PowerProfile.Performance:
-            return "Performance";
-        default:
-            return "Balanced";
-        }
-    }
-
-    // Power saver -> balanced -> performance (when the machine has one) -> back.
-    function cycleProfile(): void {
-        const order = [PowerProfile.PowerSaver, PowerProfile.Balanced];
-        if (PowerProfiles.hasPerformanceProfile)
-            order.push(PowerProfile.Performance);
-        const i = order.indexOf(PowerProfiles.profile);
-        PowerProfiles.profile = order[(i + 1) % order.length];
-    }
-
-    // Guarded by `visible` so a machine without a battery (and likely without
+    // Guarded by `present` so a machine without a battery (and likely without
     // power-profiles-daemon) never touches PowerProfiles.
     tooltip: {
-        if (!root.visible)
+        if (!root.present)
             return "";
 
         let status;
@@ -73,9 +54,9 @@ BarWidget {
         else
             status = "Plugged in";
 
-        return `${status} · ${root.profileName(PowerProfiles.profile)}`;
+        return `${status} · ${ControlCenter.profileName}`;
     }
 
     interactive: true
-    onClicked: root.cycleProfile()
+    onClicked: ControlCenter.cycleProfile()
 }

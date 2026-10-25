@@ -24,9 +24,8 @@ Rectangle {
     Layout.preferredHeight: ShellGlobals.barThickness
     Layout.alignment: Qt.AlignVCenter
 
-    visible: repeater.count > 0
-
-
+    // Its bar slot hides it while no app has an icon there.
+    readonly property bool present: repeater.count > 0
 
     RowLayout {
         id: row

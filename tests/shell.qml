@@ -8,6 +8,8 @@ import "launcher/WebSearch.js" as WebSearch
 import "launcher/Emoji.js" as Emoji
 import "keybinds/parse.js" as Parse
 import "services/Nmcli.js" as Nmcli
+import "services/Procs.js" as Procs
+import "settings/clocks.js" as Clocks
 
 Scope {
     id: root
@@ -105,8 +107,38 @@ Scope {
         root.eq("nmcli: empty trailing field", Nmcli.splitTerse("wlp8s0:wifi:disconnected:"), ["wlp8s0", "wifi", "disconnected", ""]);
     }
 
+    function procs(): void {
+        // utime 300, stime 100, rss 2048 pages; the name has a space and a ')'.
+        const line = "42 (Web Content) x) S 1 42 42 0 -1 4194560 0 0 0 0 300 100 0 0 20 0 1 0 100 0 2048 0";
+        root.eq("procs: stat line", Procs.parseProcStat(line), { pid: 42, name: "Web Content) x", ticks: 400, rss: 2048 });
+        root.eq("procs: garbage line", Procs.parseProcStat("nonsense"), null);
+        root.eq("procs: cpu lines", Procs.parseCpuLines("cpu  10 0 10 70 10 0 0 0 0 0\ncpu0 5 0 5 35 5 0 0 0 0 0\nintr 1"), [{ total: 100, idle: 80 }, { total: 50, idle: 40 }]);
+
+        const proc = (pid, ticks, rss) => `${pid} (p${pid}) S 1 1 1 0 -1 0 0 0 0 0 ${ticks} 0 0 0 20 0 1 0 1 0 ${rss} 0`;
+        const first = Procs.sample(`cpu  100 0 0 900 0 0 0 0\n${proc(1, 50, 256)}\n${proc(2, 10, 0)}`, null, 4096, 4);
+        root.eq("procs: first sample has no cpu yet", first.rows.map(r => r.cpu), [0, 0]);
+        root.eq("procs: memory share", first.rows[0].mem, 25);
+
+        const second = Procs.sample(`cpu  200 0 0 1000 0 0 0 0\n${proc(1, 100, 256)}\n${proc(2, 30, 0)}\n${proc(3, 99, 0)}`, first.state, 4096, 4);
+        root.eq("procs: cpu share of the interval", second.rows.map(r => r.cpu), [25, 10, 0]);
+        root.eq("procs: top by cpu", Procs.top(second.rows, "cpu", 2).map(r => r.pid), [1, 2]);
+        root.eq("procs: top by mem", Procs.top(second.rows, "mem", 1).map(r => r.pid), [1]);
+        root.eq("procs: sizes", [Procs.size(512), Procs.size(421888), Procs.size(1258291)], ["512K", "412M", "1.2G"]);
+        root.eq("procs: meter", Procs.bar(50, 4), "██░░");
+    }
+
+    function clocks(): void {
+        root.eq("clocks: half-hour offset", Clocks.parse("Yangon +6:30"), { name: "Yangon", offsetMinutes: 390 });
+        root.eq("clocks: negative, city with a space", Clocks.parse("Los Angeles -8"), { name: "Los Angeles", offsetMinutes: -480 });
+        root.eq("clocks: UTC prefix, no colon", Clocks.parse("Kathmandu UTC+545"), { name: "Kathmandu", offsetMinutes: 345 });
+        root.eq("clocks: zero", Clocks.parse("Lisbon 0"), { name: "Lisbon", offsetMinutes: 0 });
+        root.eq("clocks: no offset", Clocks.parse("Paris"), null);
+        root.eq("clocks: out of range", Clocks.parse("Nowhere +15"), null);
+        root.eq("clocks: format", [Clocks.format(390), Clocks.format(-180), Clocks.format(0)], ["UTC+6:30", "UTC−3", "UTC"]);
+    }
+
     Component.onCompleted: {
-        for (const suite of [root.calculator, root.fuzzy, root.webSearch, root.emoji, root.keybinds, root.nmcli]) {
+        for (const suite of [root.calculator, root.fuzzy, root.webSearch, root.emoji, root.keybinds, root.nmcli, root.procs, root.clocks]) {
             try {
                 suite();
             } catch (e) {

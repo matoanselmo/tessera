@@ -6,7 +6,7 @@ import qs.services
 // The current wallpaper (Wallpapers.source), cropped to fill its area at any
 // resolution. Switching crossfades: the new image loads underneath, fades in
 // over the old one once it is ready, then takes its place, so there is never
-// a blank frame.
+// a blank frame. The "none" transition setting swaps without the fade.
 Item {
     id: root
 
@@ -43,8 +43,16 @@ Item {
         opacity: 0
 
         onStatusChanged: {
-            if (incoming.status === Image.Ready && incoming.source !== "")
+            if (incoming.status !== Image.Ready || incoming.source === "")
+                return;
+            // With transitions off it still loads underneath first, so the
+            // swap is one frame rather than a blank one.
+            if (Settings.wallpaperTransition === "none") {
+                incoming.opacity = 1;
+                base.source = incoming.source;
+            } else {
                 fadeIn.restart();
+            }
         }
     }
 

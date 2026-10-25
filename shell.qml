@@ -8,6 +8,7 @@ import "lock"
 import "launcher" as Launcher
 import "keybinds" as Keybinds
 import "terminal" as Terminal
+import "settings" as SettingsWindow
 import qs.services
 
 Scope {
@@ -17,6 +18,7 @@ Scope {
         Keybinds.Controller.init();
         Clipboard.init();
         Terminal.PopupTerminal.init();
+        SettingsWindow.Controller.init();
     }
 
     Bar {}

@@ -18,6 +18,9 @@ Rectangle {
     property bool interactive: false
     // Shown after the pointer rests on the widget; works without `interactive`.
     property string tooltip: ""
+    // False hides the widget's slot in the bar, which animates it away.
+    property bool present: true
+    property bool tooltipMono: false
 
     // Pixel ceiling for the whole widget. 0 lets it size to its content, which
     // is what every fixed-width module wants; anything longer elides its label.
@@ -134,6 +137,7 @@ Rectangle {
     Tooltip {
         target: root
         text: root.tooltip
+        mono: root.tooltipMono
         hovered: mouse.containsMouse
     }
 }

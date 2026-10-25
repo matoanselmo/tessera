@@ -4,6 +4,8 @@ import Quickshell
 import QtQuick
 
 Singleton {
+    id: root
+
     // Font Config
     // "Google Sans" was configured but is not installed on this system, so every
     // label silently fell back to the default sans. Adwaita Sans is the Fedora
@@ -17,20 +19,16 @@ Singleton {
     // Shape
     readonly property int radius: 0
 
-    // Launcher web search. `%s` is replaced with the percent-encoded query;
-    // swap in e.g. "https://duckduckgo.com/?q=%s" / "DuckDuckGo" to change it.
-    readonly property string searchEngineUrl: "https://www.google.com/search?q=%s"
-    readonly property string searchEngineName: "Google"
+    // Launcher web search. `%s` is replaced with the percent-encoded query.
+    // Picked in the settings window (Launcher section).
+    readonly property string searchEngineUrl: Settings.engine.url
+    readonly property string searchEngineName: Settings.engine.label
 
-    // Extra clocks shown beside local time in the clock menu, left to right.
-    // Offsets are fixed minutes from UTC, so only zones without daylight
-    // saving stay exact: Brasília has been UTC-3 year-round since 2019.
-    readonly property var worldClocks: [
-        {
-            name: "Brasília",
-            offsetMinutes: -180
-        }
-    ]
+    // Extra clocks shown beside local time in the clock menu, left to right,
+    // edited in the settings window. Offsets are fixed minutes from UTC, so
+    // only zones without daylight saving stay exact: Brasília has been UTC-3
+    // year-round since 2019.
+    readonly property var worldClocks: Settings.worldClocks
 
     // The bar and lock screen clocks show Burmese digits (၁၄:၃၅) when set.
     // They need a font with Myanmar glyphs, e.g. Noto Sans Myanmar. Changed
@@ -40,6 +38,8 @@ Singleton {
 
     // Every clock's hours and minutes: 14:35 or 2:35 PM.
     readonly property string timeFormat: Settings.use24Hour ? "HH:mm" : "h:mm AP"
+    // The bar clock's, which can also show seconds.
+    readonly property string barTimeFormat: Settings.showSeconds ? (Settings.use24Hour ? "HH:mm:ss" : "h:mm:ss AP") : root.timeFormat
 
     function localiseDigits(text) {
         if (!burmeseNumerals)
@@ -63,7 +63,7 @@ Singleton {
     readonly property string wallpaperDir: "~/.config/tessera/backgrounds"
 
     // Bar metrics
-    readonly property int barThickness: 28
+    readonly property int barThickness: Settings.barThickness
     readonly property int barGap: 4
     readonly property int iconSize: 18
 

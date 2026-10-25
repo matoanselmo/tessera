@@ -24,7 +24,8 @@ terminal-styled panels and quiet, smooth motion.
   only appears on machines that have one; clicking it cycles the power profile.
   Brightness works the same way: it shows only with a backlight, scrolling
   adjusts it and clicking opens a slider.
-  Hovering CPU or memory lists the five processes using the most of it.
+  Hovering CPU or memory lists the five apps using the most of it, each with
+  its helper processes counted in (Zen once, not a dozen times).
 - **Launcher.** Fuzzy app search that learns which apps you use, with inline
   maths and web search, plus prefix modes:
   - `;` clipboard history (cliphist), with image thumbnails and a preview
@@ -45,8 +46,9 @@ terminal-styled panels and quiet, smooth motion.
   move between tiles, Enter works one, `h`/`l` moves a slider.
 - **System monitor.** A pocket [btop](https://github.com/aristocratos/btop):
   click CPU or memory for a usage graph, per-core meters, memory and swap, and
-  the busiest processes. `s` switches between CPU and memory order, and `x`
-  twice ends the selected process.
+  the busiest apps, each with its helper processes folded in. `s` switches
+  between CPU and memory order, `g` between apps and single processes, and
+  `x` twice ends the selected one.
 - **Notifications.** Toasts that stack and follow each sender's timeout, a
   history panel, and do-not-disturb.
 - **Lock screen.** Your wallpaper blurred, with a clock and a password field,

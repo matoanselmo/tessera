@@ -110,7 +110,7 @@ Scope {
     function procs(): void {
         // utime 300, stime 100, rss 2048 pages; the name has a space and a ')'.
         const line = "42 (Web Content) x) S 1 42 42 0 -1 4194560 0 0 0 0 300 100 0 0 20 0 1 0 100 0 2048 0";
-        root.eq("procs: stat line", Procs.parseProcStat(line), { pid: 42, name: "Web Content) x", ticks: 400, rss: 2048 });
+        root.eq("procs: stat line", Procs.parseProcStat(line), { pid: 42, ppid: 1, name: "Web Content) x", ticks: 400, rss: 2048 });
         root.eq("procs: garbage line", Procs.parseProcStat("nonsense"), null);
         root.eq("procs: cpu lines", Procs.parseCpuLines("cpu  10 0 10 70 10 0 0 0 0 0\ncpu0 5 0 5 35 5 0 0 0 0 0\nintr 1"), [{ total: 100, idle: 80 }, { total: 50, idle: 40 }]);
 
@@ -125,6 +125,18 @@ Scope {
         root.eq("procs: top by mem", Procs.top(second.rows, "mem", 1).map(r => r.pid), [1]);
         root.eq("procs: sizes", [Procs.size(512), Procs.size(421888), Procs.size(1258291)], ["512K", "412M", "1.2G"]);
         root.eq("procs: meter", Procs.bar(50, 4), "██░░");
+
+        // systemd(1) > niri(10) > zen(20) > content(21, 22) ; niri > foot(30) > fish(31) > btop(32)
+        const row = (pid, ppid, name, cpu, rss) => ({ pid, ppid, name, cpu, mem: 0, rss });
+        const tree = [row(1, 0, "systemd", 0, 10), row(10, 1, "niri", 2, 100), row(20, 10, ".zen-wrapped", 5, 300),
+                      row(21, 20, "Isolated Web Co", 10, 200), row(22, 20, "Web Content", 1, 100),
+                      row(30, 10, "foot", 1, 20), row(31, 30, "fish", 0, 10), row(32, 31, "btop", 3, 5)];
+        const apps = Procs.group(tree);
+        const app = name => apps.find(a => a.name === name);
+        root.eq("procs: app takes its children", [app("zen")?.count, app("zen")?.cpu, app("zen")?.rss, app("zen")?.pid], [3, 16, 600, 20]);
+        root.eq("procs: terminal takes what runs in it", [app("foot")?.count, app("foot")?.cpu], [3, 4]);
+        root.eq("procs: session processes stand alone", [app("niri")?.count, app("systemd")?.count], [1, 1]);
+        root.eq("procs: wrapper names cleaned", [Procs.appName(".quickshell-wra"), Procs.appName("foo-w"), Procs.appName("zen")], ["quickshell", "foo-w", "zen"]);
     }
 
     function clocks(): void {

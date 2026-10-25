@@ -22,7 +22,7 @@ function parseCpuLines(text) {
     return cpus;
 }
 
-// One /proc/<pid>/stat line into `{ pid, name, ticks, rss }`, or null. The
+// One /proc/<pid>/stat line into `{ pid, ppid, name, ticks, rss }`, or null. The
 // name sits in parentheses and may itself hold spaces or parentheses, so the
 // fields after it are found from the last ')'. `ticks` is utime + stime in
 // jiffies, `rss` is resident pages.
@@ -40,13 +40,14 @@ function parseProcStat(line) {
     const rest = line.slice(close + 2).split(" ");
     const ticks = (parseInt(rest[11]) || 0) + (parseInt(rest[12]) || 0);
     const rss = parseInt(rest[21]) || 0;
+    const ppid = parseInt(rest[1]) || 0;
 
-    return { pid, name: line.slice(open + 1, close), ticks, rss };
+    return { pid, ppid, name: line.slice(open + 1, close), ticks, rss };
 }
 
 // Turns one snapshot (`cat /proc/stat /proc/[0-9]*/stat`) into process rows,
 // given the previous snapshot's `{ total, ticks }` (ticks keyed by pid). Each
-// row is `{ pid, name, cpu, mem, rss }`: cpu as a percentage of the whole
+// row is `{ pid, ppid, name, cpu, mem, rss }`: cpu as a percentage of the whole
 // machine (btop's default), mem as a percentage of `memTotalKiB`, rss in KiB.
 // A process new since the last snapshot reads 0% CPU until the next one.
 //
@@ -73,6 +74,7 @@ function sample(text, previous, memTotalKiB, pageKiB) {
 
         rows.push({
             pid: p.pid,
+            ppid: p.ppid,
             name: p.name,
             cpu: elapsed > 0 ? 100 * used / elapsed : 0,
             mem: memTotalKiB > 0 ? 100 * rss / memTotalKiB : 0,
@@ -81,6 +83,70 @@ function sample(text, previous, memTotalKiB, pageKiB) {
     }
 
     return { rows, state: { total, ticks } };
+}
+
+// What a session's processes hang from rather than belong to: init, the
+// systemd user manager, the compositor, display managers, and the shell
+// itself (Tessera launches apps). An app is the topmost process below one
+// of these.
+const SESSION = ["systemd", "niri", "sway", "greetd", ".quickshell-wra", "quickshell", "qs", "kthreadd"];
+
+// Nix wraps binaries, so `zen` runs as `.zen-wrapped`; comm also cuts names
+// at 15 characters (`.quickshell-wra`). Both read better without it.
+function appName(comm) {
+    if (!comm.startsWith("."))
+        return comm;
+    return comm.slice(1).replace(/-w(r(a(p(p(e(d)?)?)?)?)?)?$/, "") || comm;
+}
+
+// Folds process rows into one row per app, in the same shape plus `count`.
+// A process belongs to the app at the top of its ancestry below the
+// session (see SESSION): Zen's content processes to Zen, a shell and what
+// runs in it to its terminal. The row keeps the app's own pid, so ending it
+// ends the app; cpu, mem and rss are summed.
+function group(rows) {
+    const byPid = {};
+    for (const r of rows)
+        byPid[r.pid] = r;
+
+    const isRoot = r => !r || r.pid <= 1 || SESSION.includes(r.name);
+    const appOf = {};
+    const findApp = r => {
+        if (appOf[r.pid] !== undefined)
+            return appOf[r.pid];
+        let app = r;
+        // Bounded, in case a snapshot taken mid-fork holds a cycle.
+        for (let i = 0; i < 64; i++) {
+            const parent = byPid[app.ppid];
+            if (isRoot(parent))
+                break;
+            app = parent;
+        }
+        return appOf[r.pid] = app.pid;
+    };
+
+    const apps = {};
+    for (const r of rows) {
+        // The session's own processes stand alone.
+        const pid = isRoot(r) ? r.pid : findApp(r);
+        if (!apps[pid]) {
+            apps[pid] = {
+                pid,
+                ppid: byPid[pid].ppid,
+                name: appName(byPid[pid].name),
+                cpu: 0,
+                mem: 0,
+                rss: 0,
+                count: 0
+            };
+        }
+        const app = apps[pid];
+        app.cpu += r.cpu;
+        app.mem += r.mem;
+        app.rss += r.rss;
+        app.count += 1;
+    }
+    return Object.values(apps);
 }
 
 // The `n` heaviest rows by `key` ("cpu" or "mem"), ties broken by the other.

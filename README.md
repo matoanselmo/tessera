@@ -22,6 +22,8 @@ terminal-styled panels and quiet, smooth motion.
   indicators for volume, CPU, memory, notifications, network, Bluetooth, the
   microphone, battery and power. Everything has hover tooltips. The battery
   only appears on machines that have one; clicking it cycles the power profile.
+  Brightness works the same way: it shows only with a backlight, scrolling
+  adjusts it and clicking opens a slider.
   Hovering CPU or memory lists the five processes using the most of it.
 - **Launcher.** Fuzzy app search that learns which apps you use, with inline
   maths and web search, plus prefix modes:
@@ -77,6 +79,7 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 | Audio | PipeWire (`wpctl` for media keys) |
 | Network and Bluetooth | NetworkManager (`nmcli`), BlueZ |
 | Battery and power profiles | UPower, `power-profiles-daemon` |
+| Brightness | systemd-logind (`busctl`); bind the brightness keys to `qs ipc call brightness up` and `down` |
 | Clipboard history | `cliphist`, `wl-clipboard` |
 | File search | `ripgrep` |
 | Popup terminal | `foot` |
@@ -170,6 +173,7 @@ qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close
 qs ipc call system        toggle | open | close         # the system monitor
 qs ipc call settings      toggle | open | close
+qs ipc call brightness    up | down | set <percent> | toggle | open | close
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 ```
 

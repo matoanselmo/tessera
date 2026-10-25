@@ -81,6 +81,11 @@ Singleton {
             note: ""
         },
         {
+            id: "brightness",
+            name: "Brightness",
+            note: "laptop only"
+        },
+        {
             id: "battery",
             name: "Battery",
             note: "laptop only"

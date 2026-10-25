@@ -31,7 +31,7 @@ Variants {
 
         // Every menu and panel that drops from this bar (BarPopup or BarPanel).
         // Listing one here is all it takes for outside clicks to dismiss it.
-        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel, systemPanel]
+        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel, systemPanel, brightnessPanel]
 
         Menu {
             id: menu
@@ -70,6 +70,12 @@ Variants {
             id: bluetoothPanel
             bar: bar
             anchorItem: bar.slots.bluetooth ?? null
+        }
+
+        BrightnessPanel {
+            id: brightnessPanel
+            bar: bar
+            anchorItem: bar.slots.brightness ?? null
         }
 
         SystemPanel {
@@ -193,6 +199,7 @@ Variants {
                 dnd: dndWidget,
                 network: networkWidget,
                 bluetooth: bluetoothWidget,
+                brightness: brightnessWidget,
                 battery: batteryWidget,
                 power: powerWidget
             })
@@ -263,6 +270,15 @@ Variants {
             id: bluetoothWidget
             BluetoothWidget {
                 onToggleRequested: BluetoothState.panelOpen = !bluetoothPanel.visible
+            }
+        }
+
+        // Hides itself without a backlight. Same visibility check as the
+        // notification toggle.
+        Component {
+            id: brightnessWidget
+            BrightnessWidget {
+                onToggleRequested: Brightness.panelOpen = !brightnessPanel.visible
             }
         }
 

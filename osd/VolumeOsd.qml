@@ -8,7 +8,8 @@ import qs.services
 
 // Volume level shown near the bottom of the focused output whenever the
 // default sink changes level or mute, or the microphone is muted or unmuted,
-// then faded out once it goes quiet.
+// then faded out once it goes quiet. Backlight changes use the same card, so
+// both move and time out alike.
 // Clicks pass straight through it.
 Scope {
     id: root
@@ -19,7 +20,7 @@ Scope {
 
     readonly property int hideAfter: 1500
 
-    // What the OSD is showing: the output "volume" or "mic" mute.
+    // What the OSD is showing: the output "volume", "mic" mute or "brightness".
     property string mode: "volume"
 
     function show(what: string): void {
@@ -42,6 +43,20 @@ Scope {
             root.show("mic");
         }
     }
+
+    Connections {
+        target: Brightness
+
+        function onAdjusted() {
+            // The brightness panel already shows the level.
+            if (!Brightness.panelOpen)
+                root.show("brightness");
+        }
+    }
+
+    readonly property bool levelMode: root.mode !== "mic"
+    readonly property real level: root.mode === "brightness" ? Brightness.level : Audio.muted ? 0 : Audio.volume
+    readonly property string levelText: root.mode === "brightness" ? `${Brightness.percent}%` : Audio.muted ? "off" : `${Audio.percent}%`
 
     Timer {
         id: hide
@@ -94,22 +109,22 @@ Scope {
                         spacing: 10
 
                         TintedIcon {
-                            source: Qt.resolvedUrl(`../bar/icons/${root.mode === "mic" ? (Audio.micMuted ? "mic-muted.svg" : "mic.svg") : Audio.icon}`)
-                            color: (root.mode === "mic" ? Audio.micMuted : Audio.muted) ? ShellGlobals.materialColors.error : ShellGlobals.materialColors.ontertiarycontainer
+                            source: Qt.resolvedUrl(`../bar/icons/${root.mode === "brightness" ? "brightness.svg" : root.mode === "mic" ? (Audio.micMuted ? "mic-muted.svg" : "mic.svg") : Audio.icon}`)
+                            color: root.mode !== "brightness" && (root.mode === "mic" ? Audio.micMuted : Audio.muted) ? ShellGlobals.materialColors.error : ShellGlobals.materialColors.ontertiarycontainer
                         }
 
                         Track {
-                            visible: root.mode === "volume"
+                            visible: root.levelMode
                             Layout.fillWidth: true
                             thickness: 6
-                            value: Audio.muted ? 0 : Audio.volume
+                            value: root.level
                         }
 
                         StyledText {
-                            visible: root.mode === "volume"
+                            visible: root.levelMode
                             Layout.preferredWidth: 38
                             horizontalAlignment: Text.AlignRight
-                            text: Audio.muted ? "off" : `${Audio.percent}%`
+                            text: root.levelText
                             font.bold: true
                             font.pixelSize: ShellGlobals.fontSize + 1
                         }

@@ -19,6 +19,7 @@ Singleton {
     property bool showSeconds: false
     property real motionScale: 1
     property int barThickness: 28
+    property bool controlCenter: true
     property string wallpaperTransition: "crossfade"
     property string searchEngine: "google"
 
@@ -38,7 +39,9 @@ Singleton {
             }))
 
     // Every widget the right side of the bar can hold. `fixed` ones cannot be
-    // hidden, only moved; `note` says when one hides itself anyway.
+    // hidden, only moved; `note` says when one hides itself anyway. `folded`
+    // ones move into the control center button while it is on; `control` is
+    // that button, only there while it is on.
     readonly property var widgetCatalog: [
         {
             id: "tray",
@@ -53,7 +56,8 @@ Singleton {
         {
             id: "volume",
             name: "Volume",
-            note: ""
+            note: "",
+            folded: true
         },
         {
             id: "cpu",
@@ -73,17 +77,25 @@ Singleton {
         {
             id: "network",
             name: "Network",
-            note: ""
+            note: "",
+            folded: true
         },
         {
             id: "bluetooth",
             name: "Bluetooth",
-            note: ""
+            note: "",
+            folded: true
         },
         {
             id: "brightness",
             name: "Brightness",
-            note: "laptop only"
+            note: "laptop only",
+            folded: true
+        },
+        {
+            id: "control",
+            name: "Control center",
+            note: ""
         },
         {
             id: "battery",
@@ -172,6 +184,22 @@ Singleton {
                 {
                     value: true,
                     label: "On"
+                }
+            ]
+        },
+        {
+            key: "controlCenter",
+            section: "bar",
+            name: "Control center",
+            description: "Fold network, sound and brightness into one button",
+            values: [
+                {
+                    value: true,
+                    label: "On"
+                },
+                {
+                    value: false,
+                    label: "Off"
                 }
             ]
         },
@@ -301,6 +329,15 @@ Singleton {
 
     function widgetShown(id: string): bool {
         return root.barWidgets.find(w => w.id === id)?.shown ?? true;
+    }
+
+    // Whether a widget is in the bar right now: switched on, and neither
+    // folded into the control center nor the button for it while it is off.
+    function widgetInBar(id: string): bool {
+        const info = root.widgetCatalog.find(c => c.id === id);
+        if (id === "control")
+            return root.controlCenter && root.widgetShown(id);
+        return root.widgetShown(id) && !(root.controlCenter && info?.folded);
     }
 
     function save(): void {

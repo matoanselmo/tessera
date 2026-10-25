@@ -37,6 +37,13 @@ terminal-styled panels and quiet, smooth motion.
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
   them with the keyboard (`tab`, `j`/`k`, and the footer's keys) or the mouse.
+- **Control center.** After macOS's: Wi-Fi, Bluetooth, microphone, do not
+  disturb, the power profile (or keep awake on a desktop), display and sound
+  sliders, now playing, and lock, screenshot and settings tiles, in one
+  dropdown. While it is on, network, sound and brightness fold into its bar
+  button, the way Windows groups them, and Bluetooth joins only while a device
+  is connected. Turn it off in settings for the classic bar. Keyboard: `j`/`k`
+  move between tiles, Enter works one, `h`/`l` moves a slider.
 - **System monitor.** A pocket [btop](https://github.com/aristocratos/btop):
   click CPU or memory for a usage graph, per-core meters, memory and swap, and
   the busiest processes. `s` switches between CPU and memory order, and `x`
@@ -80,6 +87,7 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 | Audio | PipeWire (`wpctl` for media keys) |
 | Network and Bluetooth | NetworkManager (`nmcli`), BlueZ |
 | Battery and power profiles | UPower, `power-profiles-daemon` |
+| Control center screenshots | `grim`, `slurp` |
 | Brightness | systemd-logind (`busctl`); bind the brightness keys to `qs ipc call brightness up` and `down` |
 | Clipboard history | `cliphist`, `wl-clipboard`; `wtype` for copy & paste |
 | File search | `ripgrep` |
@@ -174,6 +182,7 @@ qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close
 qs ipc call system        toggle | open | close         # the system monitor
 qs ipc call settings      toggle | open | close
+qs ipc call control       toggle | open | close | screenshot
 qs ipc call brightness    up | down | set <percent> | toggle | open | close
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 ```
@@ -196,6 +205,7 @@ applies at once:
 | `burmeseNumerals` | `true` | Burmese digits on the bar and lock screen clocks (needs a Myanmar font, such as Noto Sans Myanmar) |
 | `showSeconds` | `false` | Seconds in the bar clock |
 | `worldClocks` | Brasília | Extra clocks in the clock menu, as `{ name, offsetMinutes }` (fixed UTC offsets) |
+| `controlCenter` | `true` | Fold network, sound and brightness (and Bluetooth while connected) into the control center button |
 | `barThickness` | `28` | Bar height in pixels (24, 28 or 32) |
 | `barWidgets` | all, in the default order | The bar's right-hand widgets, left to right, as `{ id, shown }` |
 | `wallpaperTransition` | `"crossfade"` | `"none"` swaps wallpapers without fading |

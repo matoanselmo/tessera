@@ -881,7 +881,16 @@ Item {
                 }
 
                 StyledText {
-                    text: r.entry?.info.note ?? ""
+                    text: {
+                        const info = r.entry?.info;
+                        if (!info)
+                            return "";
+                        if (info.folded && Settings.controlCenter)
+                            return "in control center";
+                        if (info.id === "control" && !Settings.controlCenter)
+                            return "control center is off";
+                        return info.note;
+                    }
                     font.family: ShellGlobals.monoFamily
                     font.pixelSize: 11
                     opacity: 0.5

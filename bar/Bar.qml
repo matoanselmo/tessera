@@ -31,7 +31,7 @@ Variants {
 
         // Every menu and panel that drops from this bar (BarPopup or BarPanel).
         // Listing one here is all it takes for outside clicks to dismiss it.
-        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel, systemPanel, brightnessPanel]
+        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel, systemPanel, brightnessPanel, controlPanel]
 
         Menu {
             id: menu
@@ -46,7 +46,7 @@ Variants {
         VolumePanel {
             id: volumePanel
             bar: bar
-            anchorItem: bar.slots.volume ?? null
+            anchorItem: bar.slotFor("volume")
         }
 
         ClockMenu {
@@ -63,19 +63,31 @@ Variants {
         NetworkPanel {
             id: networkPanel
             bar: bar
-            anchorItem: bar.slots.network ?? null
+            anchorItem: bar.slotFor("network")
         }
 
         BluetoothPanel {
             id: bluetoothPanel
             bar: bar
-            anchorItem: bar.slots.bluetooth ?? null
+            anchorItem: bar.slotFor("bluetooth")
+        }
+
+        ControlPanel {
+            id: controlPanel
+            bar: bar
+            anchorItem: bar.slots.control ?? null
+        }
+
+        // Keep awake, from the control center: holds off swayidle while on.
+        IdleInhibitor {
+            window: bar
+            enabled: ControlCenter.keepAwake
         }
 
         BrightnessPanel {
             id: brightnessPanel
             bar: bar
-            anchorItem: bar.slots.brightness ?? null
+            anchorItem: bar.slotFor("brightness")
         }
 
         SystemPanel {
@@ -153,7 +165,7 @@ Variants {
 
                         required property string modelData
                         readonly property string widgetId: slot.modelData
-                        readonly property bool wanted: Settings.widgetShown(slot.widgetId) && (loader.item?.present ?? false)
+                        readonly property bool wanted: Settings.widgetInBar(slot.widgetId) && (loader.item?.present ?? false)
 
                         property real reveal: slot.wanted ? 1 : 0
 
@@ -190,6 +202,13 @@ Variants {
             return map;
         }
 
+        // Where a widget's panel opens: under the widget, or under the
+        // control center button while the widget is folded into it.
+        function slotFor(id: string): Item {
+            const folded = Settings.controlCenter && Settings.widgetCatalog.find(c => c.id === id)?.folded;
+            return (folded ? bar.slots.control : bar.slots[id]) ?? null;
+        }
+
         readonly property var widgets: ({
                 tray: trayWidget,
                 mic: micWidget,
@@ -200,6 +219,7 @@ Variants {
                 network: networkWidget,
                 bluetooth: bluetoothWidget,
                 brightness: brightnessWidget,
+                control: controlWidget,
                 battery: batteryWidget,
                 power: powerWidget
             })
@@ -279,6 +299,16 @@ Variants {
             id: brightnessWidget
             BrightnessWidget {
                 onToggleRequested: Brightness.panelOpen = !brightnessPanel.visible
+            }
+        }
+
+        // Same visibility check as the notification toggle, so a click that
+        // dismisses the open panel does not reopen it.
+        Component {
+            id: controlWidget
+            ControlButton {
+                active: controlPanel.visible
+                onClicked: ControlCenter.panelOpen = !controlPanel.visible
             }
         }
 

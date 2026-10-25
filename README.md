@@ -86,7 +86,6 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 | Audio | PipeWire (`wpctl` for media keys) |
 | Network and Bluetooth | NetworkManager (`nmcli`), BlueZ |
 | Battery and power profiles | UPower, `power-profiles-daemon` |
-| Control center screenshots | `grim`, `slurp` |
 | Brightness | systemd-logind (`busctl`); bind the brightness keys to `qs ipc call brightness up` and `down` |
 | Clipboard history | `cliphist`, `wl-clipboard`; `wtype` for copy & paste |
 | File search | `ripgrep` |

@@ -9,6 +9,7 @@ import "launcher/Emoji.js" as Emoji
 import "keybinds/parse.js" as Parse
 import "services/Nmcli.js" as Nmcli
 import "services/Procs.js" as Procs
+import "settings/clocks.js" as Clocks
 
 Scope {
     id: root
@@ -126,8 +127,18 @@ Scope {
         root.eq("procs: meter", Procs.bar(50, 4), "██░░");
     }
 
+    function clocks(): void {
+        root.eq("clocks: half-hour offset", Clocks.parse("Yangon +6:30"), { name: "Yangon", offsetMinutes: 390 });
+        root.eq("clocks: negative, city with a space", Clocks.parse("Los Angeles -8"), { name: "Los Angeles", offsetMinutes: -480 });
+        root.eq("clocks: UTC prefix, no colon", Clocks.parse("Kathmandu UTC+545"), { name: "Kathmandu", offsetMinutes: 345 });
+        root.eq("clocks: zero", Clocks.parse("Lisbon 0"), { name: "Lisbon", offsetMinutes: 0 });
+        root.eq("clocks: no offset", Clocks.parse("Paris"), null);
+        root.eq("clocks: out of range", Clocks.parse("Nowhere +15"), null);
+        root.eq("clocks: format", [Clocks.format(390), Clocks.format(-180), Clocks.format(0)], ["UTC+6:30", "UTC−3", "UTC"]);
+    }
+
     Component.onCompleted: {
-        for (const suite of [root.calculator, root.fuzzy, root.webSearch, root.emoji, root.keybinds, root.nmcli, root.procs]) {
+        for (const suite of [root.calculator, root.fuzzy, root.webSearch, root.emoji, root.keybinds, root.nmcli, root.procs, root.clocks]) {
             try {
                 suite();
             } catch (e) {

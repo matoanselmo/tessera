@@ -68,7 +68,9 @@ ColumnLayout {
         }
     }
 
+    // Left out when no column has a title, as in a plain list.
     Cells {
+        visible: table.columns.some(c => c.title !== "")
         Layout.fillWidth: true
         Layout.leftMargin: 6
         Layout.rightMargin: 6

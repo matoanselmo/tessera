@@ -7,6 +7,7 @@ import qs.components
 import qs.services
 import qs.lock
 import qs.terminal
+import qs.settings as SettingsWindow
 import "Calculator.js" as Calculator
 import "WebSearch.js" as WebSearch
 import "Fuzzy.js" as Fuzzy
@@ -62,6 +63,11 @@ Item {
     // with `list` shows its own rows, filtered by whatever follows its name
     // (`@config clock`); one with `run` runs on Enter.
     readonly property var commands: [
+        {
+            name: "settings",
+            description: "Open the settings window",
+            run: () => SettingsWindow.Controller.open()
+        },
         {
             name: "config",
             description: "Change the wallpaper and settings",

@@ -28,7 +28,8 @@ terminal-styled panels and quiet, smooth motion.
   - `;` clipboard history (cliphist)
   - `:` emoji
   - `/` files in your home folder
-  - `@` commands, such as `@config` for the wallpaper and settings, `@lock`,
+  - `@` commands, such as `@settings` for the settings window, `@config`
+    for quick changes from the launcher, `@lock`,
     `@dnd` and `@terminal`
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
@@ -43,7 +44,10 @@ terminal-styled panels and quiet, smooth motion.
   checked through PAM. It locks automatically on idle via swayidle.
 - **Popup terminal.** A fresh foot that floats over everything and closes as
   soon as it loses focus.
-- **Wallpapers.** Drop images in a folder and pick one from `@config`. Changes
+- **Settings window.** Clock format and world clocks, which bar widgets
+  show and in what order, the bar's height, wallpapers, animation speed and
+  the web search engine, all in one terminal-styled window (`@settings`).
+- **Wallpapers.** Drop images in a folder and pick one in settings or `@config`. Changes
   crossfade.
 - **And:** a keybinds overlay read from your niri config, an icon-only power
   menu that asks twice before ending the session, volume and microphone OSDs,
@@ -139,7 +143,7 @@ anything else that changes the volume) without further setup.
 | `;` | browse clipboard history; Enter copies, Shift+Delete forgets |
 | `:fire` | find emoji by name; Enter copies |
 | `/notes` | find files under `~`; Enter opens, Shift+Enter opens the folder |
-| `@` | list commands; `@config` picks a wallpaper and changes settings |
+| `@` | list commands; `@settings` opens the settings window, `@config` changes them from the launcher |
 
 `Ctrl+J`/`Ctrl+K` or the arrow keys move the selection, and `Esc` closes.
 
@@ -165,6 +169,7 @@ qs ipc call volume        toggle | open | close
 qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close
 qs ipc call system        toggle | open | close         # the system monitor
+qs ipc call settings      toggle | open | close
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 ```
 
@@ -172,16 +177,25 @@ qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 
 ## Configuration
 
-The wallpaper and a few settings can be changed from the launcher with
-`@config`. Enter on Wallpaper opens the picker (`@config wallpaper forest`
-filters it), and Enter on a setting cycles its value. Settings are saved to
-`~/.config/tessera/settings.json`, which can also be edited by hand:
+Most settings live in the settings window (`@settings`, or
+`qs ipc call settings toggle`). Tab moves between the sections and the
+settings, `j`/`k` between rows and `h`/`l` changes a value; the footer shows
+what else the selected row can do. The simple ones can also be cycled from the
+launcher with `@config`. Everything is saved to
+`~/.config/tessera/settings.json`, which is watched, so editing it by hand
+applies at once:
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `burmeseNumerals` | `true` | Burmese digits on the bar and lock screen clocks (needs a Myanmar font, such as Noto Sans Myanmar) |
 | `use24Hour` | `true` | 14:35 or 2:35 PM on every clock |
+| `burmeseNumerals` | `true` | Burmese digits on the bar and lock screen clocks (needs a Myanmar font, such as Noto Sans Myanmar) |
+| `showSeconds` | `false` | Seconds in the bar clock |
+| `worldClocks` | Brasília | Extra clocks in the clock menu, as `{ name, offsetMinutes }` (fixed UTC offsets) |
+| `barThickness` | `28` | Bar height in pixels (24, 28 or 32) |
+| `barWidgets` | all, in the default order | The bar's right-hand widgets, left to right, as `{ id, shown }` |
+| `wallpaperTransition` | `"crossfade"` | `"none"` swaps wallpapers without fading |
 | `motionScale` | `1` | Multiplies every animation's duration; `0` turns motion off |
+| `searchEngine` | `"google"` | Launcher web search: `google`, `duckduckgo`, `brave` or `startpage` |
 
 The rest live in [`ShellGlobals.qml`](ShellGlobals.qml):
 
@@ -193,8 +207,6 @@ The rest live in [`ShellGlobals.qml`](ShellGlobals.qml):
 | `animFast` / `animNormal` / `animSlow` | 150 / 250 / 400 ms | Durations for hover, opening and long travel |
 | `wallpaperDir` | `~/.config/tessera/backgrounds` | Folder the wallpaper picker lists (PNG, JPEG, WebP) |
 | `fileSearchSkip` | `["~/config"]` | Folders under `~` that `/` file search ignores |
-| `searchEngineUrl`, `searchEngineName` | Google | Web search from the launcher (`%s` is the query) |
-| `worldClocks` | Brasília | Extra clocks in the clock menu, as fixed UTC offsets |
 | `lockPamConfig`, `lockPamDir` | `swaylock`, `/usr/lib/pam.d` | PAM service the lock screen authenticates with |
 
 Saving any file hot-reloads the running shell. `qs log -t 40` shows warnings.

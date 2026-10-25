@@ -15,7 +15,7 @@ BarWidget {
     readonly property bool full: root.device.state === UPowerDeviceState.FullyCharged
     readonly property bool low: root.device.state === UPowerDeviceState.Discharging && root.percent <= 15
 
-    visible: root.device.ready && root.device.isLaptopBattery
+    present: root.device.ready && root.device.isLaptopBattery
 
     icon: {
         const p = root.percent;
@@ -57,10 +57,10 @@ BarWidget {
         PowerProfiles.profile = order[(i + 1) % order.length];
     }
 
-    // Guarded by `visible` so a machine without a battery (and likely without
+    // Guarded by `present` so a machine without a battery (and likely without
     // power-profiles-daemon) never touches PowerProfiles.
     tooltip: {
-        if (!root.visible)
+        if (!root.present)
             return "";
 
         let status;

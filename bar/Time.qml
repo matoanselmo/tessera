@@ -12,7 +12,7 @@ BarWidget {
 
     icon: "clock"
     badge: Media.playing ? "music.svg" : ""
-    label: ShellGlobals.localiseDigits(Qt.formatDateTime(clock.date, ShellGlobals.timeFormat))
+    label: ShellGlobals.localiseDigits(Qt.formatDateTime(clock.date, ShellGlobals.barTimeFormat))
     color: root.hovered ? ShellGlobals.materialColors.surfacebright : ShellGlobals.materialColors.tertiary
     foreground: ShellGlobals.materialColors.ontertiary
 
@@ -22,6 +22,6 @@ BarWidget {
 
     SystemClock {
         id: clock
-        precision: SystemClock.Minutes
+        precision: Settings.showSeconds ? SystemClock.Seconds : SystemClock.Minutes
     }
 }

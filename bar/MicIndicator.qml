@@ -8,14 +8,8 @@ import qs.services
 BarWidget {
     id: root
 
-    readonly property bool wanted: Audio.source !== null && (Audio.micMuted || Audio.micInUse)
-
-    opacity: root.wanted ? 1 : 0
-    visible: root.opacity > 0
-
-    Behavior on opacity {
-        Anim {}
-    }
+    // Its bar slot fades it in and out.
+    present: Audio.source !== null && (Audio.micMuted || Audio.micInUse)
 
     icon: Audio.micMuted ? "mic-muted.svg" : "mic.svg"
     color: Audio.micMuted ? ShellGlobals.materialColors.errorcontainer : ShellGlobals.materialColors.secondary

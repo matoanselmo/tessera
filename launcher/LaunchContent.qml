@@ -65,19 +65,13 @@ Item {
                 }));
     }
 
-    // Commands behind `@`. Typing `@` lists them; `@name` picks one. A command
-    // with `list` shows its own rows, filtered by whatever follows its name
-    // (`@config clock`); one with `run` runs on Enter.
+    // Commands behind `@`. Typing `@` lists them, the rest of the text filters
+    // them, and Enter runs one.
     readonly property var commands: [
         {
             name: "settings",
             description: "Open the settings window",
             run: () => SettingsWindow.Controller.open()
-        },
-        {
-            name: "config",
-            description: "Change the wallpaper and settings",
-            list: q => root.settingRows(q)
         },
         {
             name: "lock",
@@ -96,87 +90,16 @@ Item {
         }
     ]
 
-    // "@config wallpaper forest" → { name: "config", rest: "wallpaper forest" }.
-    readonly property var commandInput: {
-        const m = /^@(\S*)\s*(.*)$/.exec(search.text) ?? [];
-        return {
-            name: (m[1] ?? "").toLowerCase(),
-            rest: (m[2] ?? "").trim().toLowerCase()
-        };
-    }
-
     function commandRows(): var {
-        const input = root.commandInput;
-        const exact = root.commands.find(c => c.name === input.name);
-        if (exact?.list)
-            return exact.list(input.rest);
-
-        return root.commands.filter(c => c.name.startsWith(input.name)).map(c => ({
+        // "@lo" → "lo".
+        const name = (/^@(\S*)/.exec(search.text)?.[1] ?? "").toLowerCase();
+        return root.commands.filter(c => c.name.startsWith(name)).map(c => ({
                     kind: "command",
                     name: `@${c.name}`,
                     glyph: "@",
                     hint: c.description,
                     command: c
                 }));
-    }
-
-    // Every wallpaper in the folder, current one marked, plus a way to add more.
-    function wallpaperRows(q: string): var {
-        const rows = Wallpapers.images.filter(p => Wallpapers.nameOf(p).toLowerCase().includes(q)).map(p => ({
-                    kind: "wallpaper",
-                    name: Wallpapers.nameOf(p),
-                    thumb: `file://${p}`,
-                    hint: p === Wallpapers.path ? "Current" : "Set",
-                    path: p
-                }));
-        if (q === "")
-            rows.push({
-                kind: "command",
-                name: "Open the backgrounds folder",
-                glyph: "\u2197",
-                hint: ShellGlobals.wallpaperDir,
-                command: {
-                    run: () => Wallpapers.openFolder()
-                }
-            });
-        return rows;
-    }
-
-    // The wallpaper, which opens its own list (`@config wallpaper forest`),
-    // each setting with its current value, and the file they are saved in.
-    function settingRows(q: string): var {
-        const wallpaper = /^wallpaper(?:\s+(.*))?$/.exec(q);
-        if (wallpaper)
-            return root.wallpaperRows(wallpaper[1] ?? "");
-
-        const rows = "wallpaper".includes(q) ? [
-            {
-                kind: "page",
-                name: "Wallpaper",
-                glyph: "\u25a3",
-                hint: Wallpapers.path !== "" ? Wallpapers.nameOf(Wallpapers.path) : "Default",
-                query: "@config wallpaper "
-            }
-        ] : [];
-        for (const o of Settings.options.filter(o => o.name.toLowerCase().includes(q)))
-            rows.push({
-                kind: "setting",
-                name: o.name,
-                glyph: "\u2699",
-                hint: Settings.labelOf(o.key),
-                key: o.key
-            });
-        if (q === "")
-            rows.push({
-                kind: "command",
-                name: "Open settings.json",
-                glyph: "\u2197",
-                hint: "~/.config/tessera",
-                command: {
-                    run: () => Quickshell.execDetached(["xdg-open", Settings.path])
-                }
-            });
-        return rows;
     }
 
     // Files ranked by how well their name (not their folder) matches.
@@ -234,30 +157,8 @@ Item {
             Files.open(entry.path);
             break;
         case "command":
-            // A command with its own list completes to it instead of running.
-            if (entry.command.list) {
-                search.text = `${entry.name} `;
-                return;
-            }
             entry.command.run();
             break;
-        case "page":
-            search.text = entry.query;
-            return;
-        case "wallpaper":
-        case "setting":
-            {
-                // Both stay open, so you can try a few wallpapers or cycle to
-                // the value you want. The changed rows are replaced, which
-                // would push the selection on.
-                const index = list.currentIndex;
-                if (entry.kind === "wallpaper")
-                    Wallpapers.set(entry.path);
-                else
-                    Settings.next(entry.key);
-                list.currentIndex = index;
-                return;
-            }
         }
 
         root.closeRequested();
@@ -462,17 +363,7 @@ Item {
                                 : calcRows.concat(appRows, webRows);
                         }
 
-                        // Typing already resets the selection. In command mode rows also
-                        // change under you (the current wallpaper's marker moves), and
-                        // the selection should stay where you left it, until you
-                        // switch to another command or page (`@config wallpaper`).
-                        property string shownCommand: ""
-                        onValuesChanged: {
-                            const command = root.mode === "command" ? `${root.commandInput.name} ${root.commandInput.rest.split(" ")[0]}` : "";
-                            if (root.mode !== "command" || command !== shownCommand)
-                                list.currentIndex = 0;
-                            shownCommand = command;
-                        }
+                        onValuesChanged: list.currentIndex = 0
                     }
 
                     topMargin: 7
@@ -569,7 +460,7 @@ Item {
                             // placeholder texture that renders as a broken tile.
                             Item {
                                 Layout.alignment: Qt.AlignVCenter
-                                // Wallpaper rows show a wider 16:9 thumbnail.
+                                // Rows with a thumbnail get a wider slot.
                                 // Every clipboard row keeps the image width,
                                 // so text and images line up.
                                 Layout.preferredWidth: modelData.kind === "clip" ? 72 : modelData.thumb ? 56 : 32

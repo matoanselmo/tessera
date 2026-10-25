@@ -4,7 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Everything the settings window (and `@config` in the launcher) changes,
+// Everything the settings window changes,
 // kept in ~/.config/tessera/settings.json. The file is watched, so editing it
 // by hand applies at once; a missing file or key falls back to the defaults
 // here. ShellGlobals reads these, so the rest of the shell rarely refers to
@@ -135,9 +135,8 @@ Singleton {
 
     readonly property var engine: root.searchEngines.find(e => e.value === root.searchEngine) ?? root.searchEngines[0]
 
-    // The single-value settings, in the order the launcher lists them. Each
-    // names the settings window section it appears in. Enter in the launcher,
-    // or h/l in the window, moves to the next value.
+    // The single-value settings, each naming the settings window section it
+    // appears in. h/l in the window moves between the values.
     readonly property var options: [
         {
             key: "use24Hour",
@@ -274,14 +273,6 @@ Singleton {
                     }))
         }
     ]
-
-    // The current value's label, or the raw value when the file holds one
-    // that is not in the list.
-    function labelOf(key: string): string {
-        const option = root.options.find(o => o.key === key);
-        const match = option.values.find(v => v.value === root[key]);
-        return match ? match.label : String(root[key]);
-    }
 
     function next(key: string): void {
         root.step(key, 1);

@@ -32,7 +32,7 @@ Singleton {
 
     // The bar and lock screen clocks show Burmese digits (၁၄:၃၅) when set.
     // They need a font with Myanmar glyphs, e.g. Noto Sans Myanmar. Changed
-    // with `@config`, like the clock format and motionScale (see Settings).
+    // in the settings window, like the clock format and motionScale (see Settings).
     // I'm learning Burmese for my girlfriend, so the clock helps me practise. ❤
     readonly property bool burmeseNumerals: Settings.burmeseNumerals
 
@@ -58,7 +58,7 @@ Singleton {
     // points to here, so it is hidden in all but name, and full of app data.
     readonly property var fileSearchSkip: ["~/config"]
 
-    // Wallpapers to choose from with `@config` in the launcher. Any PNG, JPEG or
+    // Wallpapers to choose from in the settings window. Any PNG, JPEG or
     // WebP dropped in shows up straight away.
     readonly property string wallpaperDir: "~/.config/tessera/backgrounds"
 
@@ -75,7 +75,7 @@ Singleton {
     // for things opening, moving or resizing, `slow` for longer travel such
     // as toasts sliding in. Every animation is scaled by `motionScale`, so the
     // whole shell's pace is one number: 1.25 is calmer, 0 turns motion off.
-    // It is set with `@config` (see Settings).
+    // It is set in the settings window (see Settings).
     readonly property real motionScale: Settings.motionScale
     readonly property int animFast: 150
     readonly property int animNormal: 250

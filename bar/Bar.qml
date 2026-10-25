@@ -31,7 +31,7 @@ Variants {
 
         // Every menu and panel that drops from this bar (BarPopup or BarPanel).
         // Listing one here is all it takes for outside clicks to dismiss it.
-        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel]
+        readonly property var popups: [menu, volumePanel, clockMenu, powerMenu, trayMenu, networkPanel, bluetoothPanel, systemPanel]
 
         Menu {
             id: menu
@@ -70,6 +70,12 @@ Variants {
             id: bluetoothPanel
             bar: bar
             anchorItem: bluetoothWidget
+        }
+
+        SystemPanel {
+            id: systemPanel
+            bar: bar
+            anchorItem: memUsage
         }
 
         PowerMenu {
@@ -135,8 +141,22 @@ Variants {
                     onToggleRequested: Audio.panelOpen = !volumePanel.visible
                 }
 
-                CpuUsage {}
-                MemUsage {}
+                // Both open the system monitor, sorted by what was clicked.
+                // Same visibility check as the notification toggle, so a click
+                // that dismisses the open panel does not reopen it.
+                CpuUsage {
+                    onClicked: {
+                        SystemStats.sortBy = "cpu";
+                        SystemStats.panelOpen = !systemPanel.visible;
+                    }
+                }
+                MemUsage {
+                    id: memUsage
+                    onClicked: {
+                        SystemStats.sortBy = "mem";
+                        SystemStats.panelOpen = !systemPanel.visible;
+                    }
+                }
                 // Left click toggles do-not-disturb, right click opens the list.
                 // Decided off the popup's own visibility: a click that dismisses
                 // the menu through the DismissLayer lands here while it is still

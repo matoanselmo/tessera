@@ -11,6 +11,8 @@ Scope {
     required property Item target
     property string text: ""
     property bool hovered: false
+    // Monospace, for tooltips laid out in columns.
+    property bool mono: false
 
     // Which side of the target to open on: Edges.Bottom (default) for the bar,
     // Edges.Left for things already hanging off its right edge.
@@ -71,6 +73,7 @@ Scope {
                         anchors.centerIn: parent
                         text: root.text
                         font.bold: true
+                        font.family: root.mono ? ShellGlobals.monoFamily : ShellGlobals.fontFamily
                         color: ShellGlobals.materialColors.onprimarycontainer
                     }
                 }

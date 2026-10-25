@@ -13,7 +13,7 @@ trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/launcher" "$work/keybinds" "$work/services"
 cp "$repo"/launcher/*.js "$work/launcher/"
 cp "$repo/keybinds/parse.js" "$work/keybinds/"
-cp "$repo/services/Nmcli.js" "$work/services/"
+cp "$repo/services/Nmcli.js" "$repo/services/Procs.js" "$work/services/"
 cp "$repo/tests/shell.qml" "$work/"
 
 # Quickshell has no way to exit from QML, so the timeout ends the run; the

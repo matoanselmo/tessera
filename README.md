@@ -22,6 +22,7 @@ terminal-styled panels and quiet, smooth motion.
   indicators for volume, CPU, memory, notifications, network, Bluetooth, the
   microphone, battery and power. Everything has hover tooltips. The battery
   only appears on machines that have one; clicking it cycles the power profile.
+  Hovering CPU or memory lists the five processes using the most of it.
 - **Launcher.** Fuzzy app search that learns which apps you use, with inline
   maths and web search, plus prefix modes:
   - `;` clipboard history (cliphist)
@@ -32,6 +33,10 @@ terminal-styled panels and quiet, smooth motion.
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
   them with the keyboard (`tab`, `j`/`k`, and the footer's keys) or the mouse.
+- **System monitor.** A pocket [btop](https://github.com/aristocratos/btop):
+  click CPU or memory for a usage graph, per-core meters, memory and swap, and
+  the busiest processes. `s` switches between CPU and memory order, and `x`
+  twice ends the selected process.
 - **Notifications.** Toasts that stack and follow each sender's timeout, a
   history panel, and do-not-disturb.
 - **Lock screen.** Your wallpaper blurred, with a clock and a password field,
@@ -159,6 +164,7 @@ qs ipc call wallpaper     next | previous | random | set <path>
 qs ipc call volume        toggle | open | close
 qs ipc call network       toggle | open | close
 qs ipc call bluetooth     toggle | open | close
+qs ipc call system        toggle | open | close         # the system monitor
 qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 ```
 

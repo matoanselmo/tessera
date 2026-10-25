@@ -17,8 +17,13 @@ import "clocks.js" as Clocks
 //
 // Every row of a section is an entry in `items`, so one cursor and one set of
 // keys covers choices, world clocks, bar widgets and wallpapers alike.
-Item {
+//
+// Keys are handled on the root, a focus scope, so they arrive whichever item
+// inside holds focus.
+FocusScope {
     id: root
+
+    focus: true
 
     signal closeRequested
 
@@ -380,7 +385,10 @@ Item {
         return rows.concat([pane, close]);
     }
 
-    Component.onCompleted: root.cursor = root.firstSelectable()
+    Component.onCompleted: {
+        root.cursor = root.firstSelectable();
+        keys.forceActiveFocus();
+    }
 
     // Keeps the selected row in view as the cursor moves through a long page.
     onCursorChanged: Qt.callLater(() => {
@@ -395,53 +403,66 @@ Item {
             page.contentY = bottom - page.height + 8;
     })
 
+    // Where focus rests when no text field has it. Keys bubble from here to
+    // the root's handler.
     Item {
         id: keys
         focus: true
+    }
 
-        Keys.onPressed: event => {
-            const shift = event.modifiers & Qt.ShiftModifier;
+    // Takes focus back each time the window becomes active, instead of
+    // trusting `focus: true` alone to get it there.
+    Connections {
+        target: root.Window.window
 
-            if (event.key === Qt.Key_Escape) {
-                root.closeRequested();
-            } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
-                root.pane = root.pane === "page" ? "sections" : "page";
-            } else if (root.pane === "sections") {
-                if (event.key === Qt.Key_J || event.key === Qt.Key_Down)
-                    root.selectSection(root.sectionIndex + 1);
-                else if (event.key === Qt.Key_K || event.key === Qt.Key_Up)
-                    root.selectSection(root.sectionIndex - 1);
-                else if (event.key === Qt.Key_L || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                    root.pane = "page";
-                else
-                    return;
-            } else if (shift && event.key === Qt.Key_J) {
-                root.moveWidget(1);
-            } else if (shift && event.key === Qt.Key_K) {
-                root.moveWidget(-1);
-            } else if (event.key === Qt.Key_J || event.key === Qt.Key_Down) {
-                root.moveCursor(1);
-            } else if (event.key === Qt.Key_K || event.key === Qt.Key_Up) {
-                root.moveCursor(-1);
-            } else if (event.key === Qt.Key_L || event.key === Qt.Key_Right) {
-                root.sideways(1);
-            } else if (event.key === Qt.Key_H || event.key === Qt.Key_Left) {
-                root.sideways(-1);
-            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
-                root.activate();
-            } else if (event.key === Qt.Key_D || event.key === Qt.Key_Delete) {
-                root.removeClock();
-            } else if (event.key === Qt.Key_A && root.section === "clock") {
-                root.startEditing();
-            } else if (event.key === Qt.Key_R && root.section === "wallpaper") {
-                Wallpapers.random();
-            } else if (event.key === Qt.Key_O && root.section === "wallpaper") {
-                Wallpapers.openFolder();
-            } else {
-                return;
-            }
-            event.accepted = true;
+        function onActiveChanged() {
+            if (root.Window.window.active && !root.editing)
+                keys.forceActiveFocus();
         }
+    }
+
+    Keys.onPressed: event => {
+        const shift = event.modifiers & Qt.ShiftModifier;
+
+        if (event.key === Qt.Key_Escape) {
+            root.closeRequested();
+        } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+            root.pane = root.pane === "page" ? "sections" : "page";
+        } else if (root.pane === "sections") {
+            if (event.key === Qt.Key_J || event.key === Qt.Key_Down)
+                root.selectSection(root.sectionIndex + 1);
+            else if (event.key === Qt.Key_K || event.key === Qt.Key_Up)
+                root.selectSection(root.sectionIndex - 1);
+            else if (event.key === Qt.Key_L || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                root.pane = "page";
+            else
+                return;
+        } else if (shift && event.key === Qt.Key_J) {
+            root.moveWidget(1);
+        } else if (shift && event.key === Qt.Key_K) {
+            root.moveWidget(-1);
+        } else if (event.key === Qt.Key_J || event.key === Qt.Key_Down) {
+            root.moveCursor(1);
+        } else if (event.key === Qt.Key_K || event.key === Qt.Key_Up) {
+            root.moveCursor(-1);
+        } else if (event.key === Qt.Key_L || event.key === Qt.Key_Right) {
+            root.sideways(1);
+        } else if (event.key === Qt.Key_H || event.key === Qt.Key_Left) {
+            root.sideways(-1);
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
+            root.activate();
+        } else if (event.key === Qt.Key_D || event.key === Qt.Key_Delete) {
+            root.removeClock();
+        } else if (event.key === Qt.Key_A && root.section === "clock") {
+            root.startEditing();
+        } else if (event.key === Qt.Key_R && root.section === "wallpaper") {
+            Wallpapers.random();
+        } else if (event.key === Qt.Key_O && root.section === "wallpaper") {
+            Wallpapers.openFolder();
+        } else {
+            return;
+        }
+        event.accepted = true;
     }
 
     SystemClock {

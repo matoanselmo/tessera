@@ -31,9 +31,8 @@ terminal-styled panels and quiet, smooth motion.
     of the selected entry
   - `:` emoji
   - `/` files in your home folder
-  - `@` commands, such as `@settings` for the settings window, `@config`
-    for quick changes from the launcher, `@lock`,
-    `@dnd` and `@terminal`
+  - `@` commands: `@settings` for the settings window, `@lock`, `@dnd` and
+    `@terminal`
 - **Panels in the style of [bluetui](https://github.com/pythops/bluetui) and
   impala** for network, Bluetooth and volume (per-app volume included). Drive
   them with the keyboard (`tab`, `j`/`k`, and the footer's keys) or the mouse.
@@ -57,7 +56,7 @@ terminal-styled panels and quiet, smooth motion.
 - **Settings window.** Clock format and world clocks, which bar widgets
   show and in what order, the bar's height, wallpapers, animation speed and
   the web search engine, all in one terminal-styled window (`@settings`).
-- **Wallpapers.** Drop images in a folder and pick one in settings or `@config`. Changes
+- **Wallpapers.** Drop images in a folder and pick one in the settings window. Changes
   crossfade.
 - **And:** a keybinds overlay read from your niri config, an icon-only power
   menu that asks twice before ending the session, volume and microphone OSDs,
@@ -102,7 +101,7 @@ Quickshell loads `~/.config/quickshell` by default:
 
 ```sh
 git clone https://github.com/matoanselmo/tessera ~/.config/quickshell
-mkdir -p ~/.config/tessera/backgrounds   # wallpapers for @config
+mkdir -p ~/.config/tessera/backgrounds   # wallpapers for the settings window
 ```
 
 Then add the pieces below to `~/.config/niri/config.kdl` and log in again.
@@ -155,7 +154,7 @@ anything else that changes the volume) without further setup.
 | `;` | browse clipboard history; Enter copies, Shift+Enter copies and pastes, Shift+Delete forgets, Tab shows only images |
 | `:fire` | find emoji by name; Enter copies |
 | `/notes` | find files under `~`; Enter opens, Shift+Enter opens the folder |
-| `@` | list commands; `@settings` opens the settings window, `@config` changes them from the launcher |
+| `@` | list commands, such as `@settings` for the settings window |
 
 `Ctrl+J`/`Ctrl+K` or the arrow keys move the selection, and `Esc` closes.
 
@@ -194,8 +193,7 @@ qs ipc call notifications toggle | clear | toggleDnd | dndOn | dndOff
 Most settings live in the settings window (`@settings`, or
 `qs ipc call settings toggle`). Tab moves between the sections and the
 settings, `j`/`k` between rows and `h`/`l` changes a value; the footer shows
-what else the selected row can do. The simple ones can also be cycled from the
-launcher with `@config`. Everything is saved to
+what else the selected row can do. Everything is saved to
 `~/.config/tessera/settings.json`, which is watched, so editing it by hand
 applies at once:
 

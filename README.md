@@ -27,7 +27,8 @@ terminal-styled panels and quiet, smooth motion.
   Hovering CPU or memory lists the five processes using the most of it.
 - **Launcher.** Fuzzy app search that learns which apps you use, with inline
   maths and web search, plus prefix modes:
-  - `;` clipboard history (cliphist)
+  - `;` clipboard history (cliphist), with image thumbnails and a preview
+    of the selected entry
   - `:` emoji
   - `/` files in your home folder
   - `@` commands, such as `@settings` for the settings window, `@config`
@@ -80,7 +81,7 @@ it includes the Networking, Bluetooth, PAM and session-lock modules.
 | Network and Bluetooth | NetworkManager (`nmcli`), BlueZ |
 | Battery and power profiles | UPower, `power-profiles-daemon` |
 | Brightness | systemd-logind (`busctl`); bind the brightness keys to `qs ipc call brightness up` and `down` |
-| Clipboard history | `cliphist`, `wl-clipboard` |
+| Clipboard history | `cliphist`, `wl-clipboard`; `wtype` for copy & paste |
 | File search | `ripgrep` |
 | Popup terminal | `foot` |
 | Locking on idle | `swayidle`, and `swaylock`'s PAM file (see [Lock screen](#lock-screen)) |
@@ -143,7 +144,7 @@ anything else that changes the volume) without further setup.
 | an app name | launch it (apps you use often rank first among equal matches) |
 | `2^10`, `sqrt 2`, `1,000 * 3` | do maths; Enter copies the result |
 | a URL or anything else | open it, or search the web |
-| `;` | browse clipboard history; Enter copies, Shift+Delete forgets |
+| `;` | browse clipboard history; Enter copies, Shift+Enter copies and pastes, Shift+Delete forgets, Tab shows only images |
 | `:fire` | find emoji by name; Enter copies |
 | `/notes` | find files under `~`; Enter opens, Shift+Enter opens the folder |
 | `@` | list commands; `@settings` opens the settings window, `@config` changes them from the launcher |

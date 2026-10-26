@@ -44,9 +44,10 @@ Singleton {
         PowerProfiles.profile = order[(i + 1) % order.length];
     }
 
-    // Pick a region with slurp; the shot is copied and saved under
-    // ~/Pictures/Screenshots. The panel closes first and the capture waits
-    // for its fade, so it never ends up in the picture.
+    // niri's own screenshot UI: pick a region, a window or the screen, and
+    // niri copies it and saves it to `screenshot-path` from its config. The
+    // panel closes first and the UI waits for its fade, so it is never in
+    // the picture.
     function screenshot(): void {
         root.panelOpen = false;
         shotDelay.restart();
@@ -55,13 +56,7 @@ Singleton {
     Timer {
         id: shotDelay
         interval: ShellGlobals.animNormal * ShellGlobals.motionScale + 150
-        onTriggered: Quickshell.execDetached(["sh", "-c", `
-            dir="$HOME/Pictures/Screenshots"
-            mkdir -p "$dir"
-            file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
-            region=$(slurp) || exit 0
-            grim -g "$region" "$file" && wl-copy --type image/png < "$file"
-        `])
+        onTriggered: Quickshell.execDetached(["niri", "msg", "action", "screenshot"])
     }
 
     IpcHandler {

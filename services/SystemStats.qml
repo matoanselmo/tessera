@@ -18,6 +18,9 @@ Singleton {
     property bool panelOpen: false
     // What the panel's process list is ordered by: "cpu" or "mem".
     property string sortBy: "cpu"
+    // Whether the panel lists apps (each with its helper processes folded
+    // in) or every process on its own. Tooltips always list apps.
+    property bool groupByApp: true
 
     property int cpuPercent: 0
     // One percentage per core (per thread, really), in /proc/stat's order.
@@ -40,8 +43,10 @@ Singleton {
 
     // `{ pid, name, cpu, mem, rss }` for every process, while `sampling`.
     property var processes: []
-    readonly property var topCpu: Procs.top(root.processes, "cpu", 5)
-    readonly property var topMem: Procs.top(root.processes, "mem", 5)
+    // The same, one row per app plus a `count` of its processes.
+    readonly property var apps: Procs.group(root.processes)
+    readonly property var topCpu: Procs.top(root.apps, "cpu", 5)
+    readonly property var topMem: Procs.top(root.apps, "mem", 5)
 
     // Hovered CPU and memory widgets, across every bar. They count themselves
     // in and out with peek().

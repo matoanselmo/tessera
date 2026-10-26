@@ -9,9 +9,10 @@ import "../services/Procs.js" as Procs
 
 // A pocket btop, in the same terminal style as the other panels: a CPU pane
 // (a two-minute usage graph and a meter per core), a memory pane, and the
-// busiest processes. j/k or the arrows move through the list, s switches it
-// between CPU and memory order, and x twice sends the selected process
-// SIGTERM.
+// busiest apps. j/k or the arrows move through the list, s switches it
+// between CPU and memory order, g between apps and single processes, and x
+// twice sends the selected one SIGTERM (an app's main process, so the whole
+// app quits).
 BarPanel {
     id: panel
 
@@ -20,7 +21,7 @@ BarPanel {
 
     readonly property int processRows: 12
 
-    readonly property var shown: Procs.top(SystemStats.processes, SystemStats.sortBy, panel.processRows)
+    readonly property var shown: Procs.top(SystemStats.groupByApp ? SystemStats.apps : SystemStats.processes, SystemStats.sortBy, panel.processRows)
     readonly property var selected: panel.shown[table.currentIndex] ?? null
 
     // The cursor follows a process rather than a row, so the list re-sorting
@@ -55,6 +56,11 @@ BarPanel {
 
     function setSort(key: string): void {
         SystemStats.sortBy = key;
+        panel.armedPid = -1;
+    }
+
+    function toggleGroup(): void {
+        SystemStats.groupByApp = !SystemStats.groupByApp;
         panel.armedPid = -1;
     }
 
@@ -94,7 +100,8 @@ BarPanel {
 
     readonly property var hints: {
         const rows = [
-            { key: "s", label: SystemStats.sortBy === "cpu" ? "sort by mem" : "sort by cpu", action: () => panel.setSort(SystemStats.sortBy === "cpu" ? "mem" : "cpu") }
+            { key: "s", label: SystemStats.sortBy === "cpu" ? "sort by mem" : "sort by cpu", action: () => panel.setSort(SystemStats.sortBy === "cpu" ? "mem" : "cpu") },
+            { key: "g", label: SystemStats.groupByApp ? "processes" : "apps", action: panel.toggleGroup }
         ];
         if (panel.selected)
             rows.push({ key: "x", label: panel.armedPid === panel.selected.pid ? "confirm kill" : "kill", action: panel.kill });
@@ -113,6 +120,8 @@ BarPanel {
                 panel.select(Math.max(0, table.currentIndex - 1));
             } else if (event.key === Qt.Key_S || event.key === Qt.Key_Tab) {
                 panel.setSort(SystemStats.sortBy === "cpu" ? "mem" : "cpu");
+            } else if (event.key === Qt.Key_G) {
+                panel.toggleGroup();
             } else if (event.key === Qt.Key_C) {
                 panel.setSort("cpu");
             } else if (event.key === Qt.Key_M) {
@@ -229,7 +238,7 @@ BarPanel {
         }
 
         TuiPane {
-            title: SystemStats.sortBy === "cpu" ? "Processes · by cpu" : "Processes · by mem"
+            title: `${SystemStats.groupByApp ? "Apps" : "Processes"} · by ${SystemStats.sortBy}`
             focused: true
 
             TuiTable {
@@ -237,12 +246,13 @@ BarPanel {
                 focused: true
                 columns: [
                     { title: "Pid", width: 56 },
-                    { title: "Program", width: 0 },
+                    { title: SystemStats.groupByApp ? "App" : "Program", width: 0 },
                     { title: "Mem", width: 52 },
                     { title: "Mem%", width: 48 },
                     { title: "Cpu%", width: 48 }
                 ]
-                rows: panel.shown.map(p => [String(p.pid), p.name, Procs.size(p.rss), p.mem.toFixed(1), p.cpu.toFixed(1)])
+                // An app's helper processes show as a count after its name.
+                rows: panel.shown.map(p => [String(p.pid), p.count > 1 ? `${p.name} ×${p.count}` : p.name, Procs.size(p.rss), p.mem.toFixed(1), p.cpu.toFixed(1)])
                 emptyText: "Reading processes…"
                 onSelected: index => panel.select(index)
                 onScrolled: (index, delta) => panel.select(index)
@@ -252,7 +262,7 @@ BarPanel {
         StyledText {
             Layout.fillWidth: true
             Layout.leftMargin: 4
-            text: panel.message !== "" ? panel.message : `${SystemStats.processes.length} processes`
+            text: panel.message !== "" ? panel.message : `${SystemStats.apps.length} apps · ${SystemStats.processes.length} processes`
             elide: Text.ElideRight
             font.family: ShellGlobals.monoFamily
             font.pixelSize: 11
